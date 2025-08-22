@@ -1,0 +1,18 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Build outputs
+build/
+dist/
+public/
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Ignore GitHub Pages workflow artifacts (local)
+/.cache/
