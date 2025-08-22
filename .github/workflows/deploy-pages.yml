@@ -17,40 +17,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js (optional)
+      - name: Setup Node.js (with npm cache)
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-
-      - name: Cache npm
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.npm
-            ~/.cache
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Prepare site output
         shell: bash
         run: |
           # If this repo has a lockfile, prefer reproducible installs; otherwise if package.json exists, install
-          if [ -f package-lock.json ] || [ -f yarn.lock ]; then
-            if [ -f package-lock.json ]; then
-              npm ci
-            elif [ -f yarn.lock ]; then
-              corepack enable || true
-              yarn install --frozen-lockfile || true
-            fi
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f yarn.lock ]; then
+            corepack enable
+            yarn install --frozen-lockfile
           elif [ -f package.json ]; then
             # No lockfile but package.json exists — do a best-effort install so build can run
-            npm install || true
+            npm install
           fi
 
           # Run build if a build script is available (works for many frameworks, including Vite)
           if npm run | grep -q "build"; then
-            npm run build || true
+            npm run build
           fi
 
           # Ensure there is at least one static page to deploy if no build output
