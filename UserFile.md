@@ -105,3 +105,13 @@
 2. 액션 및 깃허브 페이지 활성화가 정상적으로 실행되어 세팅-페이지 에 URL이 표시되는 것이 최종 목표
    - 그 과정에서, 코파일럿이 직접 적절한 워크플로우를 생성할 것.
    - 또한 필요없는 항목은 .gitignore로 제외하면서 소스 컨트롤을 최적화 해줄 것.
+---
+# 빌드 오류 1차
+
+변경된 파일: deploy-pages.yml
+   기존: actions/upload-pages-artifact@v1 + actions/deploy-pages@v1
+   변경: 빌드 출력 디렉토리 감지 후 peaceiris/actions-gh-pages@v3로 배포(gh-pages 브랜치)
+레포 전체 검색:
+   직접적인 upload-artifact@v3 참조는 없음
+   upload-artifact / upload-pages-artifact 문자열도 없음(현재 워크스페이스 기준)
+따라서 실패 메시지는 재사용 워크플로우, 외부 액션 내부 의존성, 또는 GitHub 측 캐시/환경에서 유래했을 가능성이 높음
