@@ -72,9 +72,10 @@ jobs:
             echo "publish_dir=public" >> $GITHUB_OUTPUT
           fi
 
-      - name: Deploy to gh-pages branch
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ steps.find_dir.outputs.publish_dir }}
-          publish_branch: gh-pages
+          path: ${{ steps.find_dir.outputs.publish_dir }}
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
