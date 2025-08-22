@@ -72,10 +72,24 @@ jobs:
             echo "publish_dir=public" >> $GITHUB_OUTPUT
           fi
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v2
+      - name: Archive Pages artifact (Linux/macOS/Windows)
+        shell: bash
+        run: |
+          set -e
+          ART_DIR=${{ steps.find_dir.outputs.publish_dir }}
+          TAR_NAME="$RUNNER_TEMP/artifact.tar"
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            tar -cvf "$TAR_NAME" -C "$ART_DIR" .
+          else
+            tar --dereference --hard-dereference -cvf "$TAR_NAME" -C "$ART_DIR" --exclude=.git --exclude=.github .
+          fi
+
+      - name: Upload artifact with upload-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
-          path: ${{ steps.find_dir.outputs.publish_dir }}
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
