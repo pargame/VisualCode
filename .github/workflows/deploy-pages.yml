@@ -25,7 +25,7 @@ jobs:
       - name: Prepare site output
         shell: bash
         run: |
-          # If this repo is a Node project with a lockfile, run CI and build
+          # If this repo has a lockfile, prefer reproducible installs; otherwise if package.json exists, install
           if [ -f package-lock.json ] || [ -f yarn.lock ]; then
             if [ -f package-lock.json ]; then
               npm ci
@@ -33,11 +33,14 @@ jobs:
               corepack enable || true
               yarn install --frozen-lockfile || true
             fi
+          elif [ -f package.json ]; then
+            # No lockfile but package.json exists — do a best-effort install so build can run
+            npm install || true
+          fi
 
-            # Prefer common build dirs used by frameworks
-            if npm run | grep -q "build"; then
-              npm run build || true
-            fi
+          # Run build if a build script is available (works for many frameworks, including Vite)
+          if npm run | grep -q "build"; then
+            npm run build || true
           fi
 
           # Ensure there is at least one static page to deploy if no build output
