@@ -63,18 +63,18 @@ jobs:
         id: find_dir
         run: |
           if [ -d build ]; then
-            echo "PUBLISH_DIR=build" >> $GITHUB_ENV
+            echo "publish_dir=build" >> $GITHUB_OUTPUT
           elif [ -d dist ]; then
-            echo "PUBLISH_DIR=dist" >> $GITHUB_ENV
+            echo "publish_dir=dist" >> $GITHUB_OUTPUT
           elif [ -d public ]; then
-            echo "PUBLISH_DIR=public" >> $GITHUB_ENV
+            echo "publish_dir=public" >> $GITHUB_OUTPUT
           else
-            echo "PUBLISH_DIR=public" >> $GITHUB_ENV
+            echo "publish_dir=public" >> $GITHUB_OUTPUT
           fi
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ env.PUBLISH_DIR }}
+          publish_dir: ${{ steps.find_dir.outputs.publish_dir }}
           publish_branch: gh-pages

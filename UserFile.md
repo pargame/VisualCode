@@ -106,7 +106,7 @@
    - 그 과정에서, 코파일럿이 직접 적절한 워크플로우를 생성할 것.
    - 또한 필요없는 항목은 .gitignore로 제외하면서 소스 컨트롤을 최적화 해줄 것.
 ---
-# 빌드 오류 1차
+# 빌드 오류 발생에 따른 해결 로그
 
 변경된 파일: deploy-pages.yml
    기존: actions/upload-pages-artifact@v1 + actions/deploy-pages@v1
@@ -115,3 +115,9 @@
    직접적인 upload-artifact@v3 참조는 없음
    upload-artifact / upload-pages-artifact 문자열도 없음(현재 워크스페이스 기준)
 따라서 실패 메시지는 재사용 워크플로우, 외부 액션 내부 의존성, 또는 GitHub 측 캐시/환경에서 유래했을 가능성이 높음
+
+파일 변경: deploy-pages.yml
+placeholder HTML 생성시 heredoc 들여쓰기 문제 수정(정상적인 here-doc 블록으로 대체, YAML 들여쓰기 보정).
+빌드 출력 디렉토리 판별 스텝을 steps.find_dir.outputs.publish_dir로 노출하도록 변경.
+배포 도구는 peaceiris/actions-gh-pages@v3 사용(직접 gh-pages 브랜치에 커밋).
+.gitignore와 워크플로우 파일은 이전에 스테이징된 상태입니다(이미 git add 실행됨).
