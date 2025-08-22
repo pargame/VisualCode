@@ -96,3 +96,25 @@ jobs:
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
+
+      - name: Smoke check deployed site
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          URL="https://${OWNER}.github.io/${REPO}/"
+          echo "Smoke checking site: $URL"
+          # Check HTTP 200
+          HTTP_CODE=$(curl -fsS -o /dev/null -w "%{http_code}" "$URL" || true)
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Site did not return 200 (got $HTTP_CODE)"
+            exit 1
+          fi
+          # Check root node
+          if ! curl -fsS "$URL" | grep -q '<div id="root"'; then
+            echo "Root div not found in HTML"
+            exit 1
+          fi
+          echo "Smoke checks passed"
