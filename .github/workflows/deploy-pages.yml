@@ -1,0 +1,81 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (optional)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Prepare site output
+        shell: bash
+        run: |
+          # If this repo is a Node project with a lockfile, run CI and build
+          if [ -f package-lock.json ] || [ -f yarn.lock ]; then
+            if [ -f package-lock.json ]; then
+              npm ci
+            elif [ -f yarn.lock ]; then
+              corepack enable || true
+              yarn install --frozen-lockfile || true
+            fi
+
+            # Prefer common build dirs used by frameworks
+            if npm run | grep -q "build"; then
+              npm run build || true
+            fi
+          fi
+
+          # Ensure there is at least one static page to deploy if no build output
+          if [ ! -d build ] && [ ! -d dist ] && [ ! -d public ]; then
+            mkdir -p public
+            cat > public/index.html <<'HTML'
+            <!doctype html>
+            <html>
+              <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width,initial-scale=1">
+                <title>Empty GitHub Pages site</title>
+              </head>
+              <body>
+                <h1>This site was deployed from GitHub Actions</h1>
+                <p>No build artifact was found; the workflow generated this placeholder page.</p>
+              </body>
+            </html>
+          HTML
+          fi
+
+      - name: Determine publish directory
+        id: find_dir
+        run: |
+          if [ -d build ]; then
+            echo "publish_dir=build" >> $GITHUB_OUTPUT
+          elif [ -d dist ]; then
+            echo "publish_dir=dist" >> $GITHUB_OUTPUT
+          elif [ -d public ]; then
+            echo "publish_dir=public" >> $GITHUB_OUTPUT
+          else
+            echo "publish_dir=public" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ${{ steps.find_dir.outputs.publish_dir }}
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
