@@ -18,3 +18,15 @@ public/
 
 # Ignore GitHub Pages workflow artifacts (local)
 /.cache/
+
+# Local audit/build artifacts (generated during maintenance)
+audit.json
+audit_total.txt
+build.log
+
+# Environment files (local secrets)
+.env
+.env.*
+
+# JetBrains IDEs
+.idea/
