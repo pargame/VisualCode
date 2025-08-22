@@ -6,7 +6,9 @@ yarn-error.log*
 # Build outputs
 build/
 dist/
+# ignore public folder but allow tracking a single index.html for quick Pages testing
 public/
+!public/index.html
 
 # VSCode
 .vscode/
