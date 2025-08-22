@@ -56,7 +56,7 @@ jobs:
                 <p>No build artifact was found; the workflow generated this placeholder page.</p>
               </body>
             </html>
-            HTML
+          HTML
           fi
 
       - name: Determine publish directory
