@@ -5,14 +5,15 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
+    outputs:
+      publish_dir: ${{ steps.find_dir.outputs.publish_dir }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,23 +28,19 @@ jobs:
       - name: Prepare site output
         shell: bash
         run: |
-          # If this repo has a lockfile, prefer reproducible installs; otherwise if package.json exists, install
           if [ -f package-lock.json ]; then
             npm ci
           elif [ -f yarn.lock ]; then
             corepack enable
             yarn install --frozen-lockfile
           elif [ -f package.json ]; then
-            # No lockfile but package.json exists — do a best-effort install so build can run
             npm install
           fi
 
-          # Run build if a build script is available (works for many frameworks, including Vite)
           if npm run | grep -q "build"; then
             npm run build
           fi
 
-          # Ensure there is at least one static page to deploy if no build output
           if [ ! -d build ] && [ ! -d dist ] && [ ! -d public ]; then
             mkdir -p public
             cat > public/index.html <<'HTML'
@@ -75,46 +72,44 @@ jobs:
             echo "publish_dir=public" >> $GITHUB_OUTPUT
           fi
 
-      - name: Archive Pages artifact (Linux/macOS/Windows)
-        shell: bash
-        run: |
-          set -e
-          ART_DIR=${{ steps.find_dir.outputs.publish_dir }}
-          TAR_NAME="$RUNNER_TEMP/artifact.tar"
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            tar -cvf "$TAR_NAME" -C "$ART_DIR" .
-          else
-            tar --dereference --hard-dereference -cvf "$TAR_NAME" -C "$ART_DIR" --exclude=.git --exclude=.github .
-          fi
-
-      - name: Upload artifact with upload-artifact@v4
-        uses: actions/upload-artifact@v4
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          name: github-pages
-          path: ${{ runner.temp }}/artifact.tar
-          retention-days: 1
+          path: ${{ steps.find_dir.outputs.publish_dir }}
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
 
-      - name: Smoke check deployed site
-        if: always()
-        shell: bash
+  smoke-check:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Pages to be available
         run: |
           set -euo pipefail
           OWNER="${{ github.repository_owner }}"
           REPO="${{ github.event.repository.name }}"
           URL="https://${OWNER}.github.io/${REPO}/"
           echo "Smoke checking site: $URL"
-          # Check HTTP 200
-          HTTP_CODE=$(curl -fsS -o /dev/null -w "%{http_code}" "$URL" || true)
+          for i in {1..12}; do
+            HTTP_CODE=$(curl -fsS -o /dev/null -w "%{http_code}" "$URL" || true)
+            if [ "$HTTP_CODE" = "200" ]; then
+              break
+            fi
+            sleep 5
+          done
           if [ "$HTTP_CODE" != "200" ]; then
             echo "Site did not return 200 (got $HTTP_CODE)"
             exit 1
           fi
-          # Check root node
-          if ! curl -fsS "$URL" | grep -q '<div id="root"'; then
-            echo "Root div not found in HTML"
-            exit 1
-          fi
-          echo "Smoke checks passed"
+
+      - name: Smoke assertions
+        run: |
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          URL="https://${OWNER}.github.io/${REPO}/"
+          curl -fsS "$URL" | grep -q '<div id="root"' || (echo 'Root div not found in HTML' && exit 1)
