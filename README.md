@@ -86,11 +86,11 @@ npm run build
 CI 기대사항
 
 - PR/Push시에 CI는 다음을 수행하도록 설정되어 있습니다:
-   1. `npm ci` (lockfile 기반 재현 가능한 설치)
-   2. `npm run lint`
-   3. `npm run check:format`
-   4. `npm run test -- --run`
-   5. `npm run build`
+  1.  `npm ci` (lockfile 기반 재현 가능한 설치)
+  2.  `npm run lint`
+  3.  `npm run check:format`
+  4.  `npm run test -- --run`
+  5.  `npm run build`
 
 테스트 주의사항
 
@@ -100,7 +100,6 @@ CI 기대사항
 Dependabot
 
 - 의존성 자동 업데이트를 위해 `.github/dependabot.yml`을 추가했습니다. 기본 주기는 주간(weekly)이며, 최대 5개의 PR을 동시에 엽니다.
-
 
 ## 배포 및 CI
 
@@ -194,6 +193,15 @@ echo "Smoke checks passed"
 - 배포 검증: `docs/CI_SMOKE.md`에 기반한 스모크 체크 스크립트를 문서화했습니다.
 - 보안 조치: 민감 파일(`.env`, `audit.json`, `build.log` 등)을 히스토리에서 제거했으며, 로컬 노트 파일은 `.gitignore`로 관리합니다.
 - 캐시/인덱스 정책: HTML은 no-cache 헤더로 최신 HTML을 보장하고, 에셋은 해시된 파일명으로 캐시 가능하도록 유지했습니다.
+
+## 유지보수 및 보안(요약)
+
+- Dependabot을 설정하여 주간 의존성 업데이트 PR을 자동으로 생성합니다 (`.github/dependabot.yml`).
+- `npm audit` 및 `npm audit fix` 절차는 `docs/SECURITY.md`에 문서화되어 있습니다. `npm audit fix --force`는 별도의 브랜치에서 실행하고 CI 검증을 거친 후 main에 병합하세요.
+
+## 템플릿
+
+- Pull Request와 Issue 템플릿을 추가했습니다(파일: `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE.md`). PR을 열 때 템플릿을 사용하면 리뷰가 빨라집니다.
 
 ## 운영·유지보수 팁
 
