@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -113,3 +113,26 @@ jobs:
           REPO="${{ github.event.repository.name }}"
           URL="https://${OWNER}.github.io/${REPO}/"
           curl -fsS "$URL" | grep -q '<div id="root"' || (echo 'Root div not found in HTML' && exit 1)
+
+  rollback:
+    needs: smoke-check
+    runs-on: ubuntu-latest
+    if: ${{ needs.smoke-check.result == 'failure' }}
+    steps:
+      - name: Checkout (fetch all)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore gh-pages from gh-pages-backup
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          # Fetch the backup branch from origin
+          git fetch origin gh-pages-backup:refs/remotes/origin/gh-pages-backup
+          # Force-update remote gh-pages with backup
+          git push origin origin/gh-pages-backup:gh-pages --force
+          echo "Rollback: origin/gh-pages has been restored from origin/gh-pages-backup"
