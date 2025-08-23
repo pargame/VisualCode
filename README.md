@@ -97,3 +97,25 @@ echo "Smoke checks passed"
 
 원하시면 이 README를 리포지터리에 커밋하고 원격에 푸시해 드립니다. `UserNotification.md`는 로컬 전용으로 유지하려면 그대로 두고, 삭제하려면 알려주세요.
 
+## gh-pages 백업 보존
+이 저장소에서는 기존에 사용하던 `gh-pages` 브랜치의 상태를 안전하게 보관하기 위해 `gh-pages-backup` 브랜치를 원격에 생성해 보관해 두었습니다. 목적은 긴급 복구나 롤백 시점 확보입니다. 일반적인 운영은 `main` → GitHub Actions 일원화(자동 빌드/배포)를 권장하므로, 별도의 조치는 필요하지 않습니다.
+
+복구 또는 삭제 예시 명령:
+
+복구(원격 `gh-pages`를 `gh-pages-backup`의 상태로 덮어쓰기):
+
+```bash
+git fetch origin
+git checkout gh-pages-backup
+git push origin gh-pages-backup:gh-pages
+```
+
+삭제(백업 브랜치 제거):
+
+```bash
+git push origin --delete gh-pages-backup
+git branch -D gh-pages-backup
+```
+
+위 작업은 신중히 진행하세요. 일단 백업이 있으니 현재는 별도 조치 없이 `main` 중심 워크플로우를 유지하시면 됩니다.
+
