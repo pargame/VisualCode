@@ -24,6 +24,9 @@ audit.json
 audit_total.txt
 build.log
 
+# Local user notes
+UserFile.md
+
 # Environment files (local secrets)
 .env
 .env.*
