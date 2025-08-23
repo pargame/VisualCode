@@ -8,10 +8,3 @@ updates:
     ignore:
       - dependency-name: "vite"
         update-types: ["version-update:semver-major"]
-version: 2
-updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
-      interval: 'weekly'
-    open-pull-requests-limit: 5
