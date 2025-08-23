@@ -20,3 +20,8 @@
 커밋 훅
 
 - Husky가 설치되어 있으며, pre-commit 훅에서 `lint-staged`를 통해 변경 파일에 대해 ESLint와 Prettier가 실행됩니다.
+
+PR preview artifact
+
+- Pull Request를 열면 GitHub Actions가 빌드 산출물을 `preview-dist`라는 아티팩트로 업로드합니다.
+- 리뷰어는 Actions의 'Artifacts'에서 `preview-dist`를 다운로드해 로컬에서 `npx serve dist` 등으로 미리보기를 확인할 수 있습니다.

@@ -9,6 +9,8 @@
 - 목표: 빠른 로컬 개발, 재현 가능한 프로덕션 빌드, GitHub Pages로의 자동 배포
 - 포함된 항목: Vite 설정(`vite.config.js`), 간단한 React 앱(`src/`), CI 워크플로우 문서(`.github/workflows/deploy-pages.yml` 문서화), 운영 문서(`docs/`)
 
+[![CI](https://github.com/pargame/VisualCode/actions/workflows/ci.yml/badge.svg)](https://github.com/pargame/VisualCode/actions/workflows/ci.yml)
+
 ## 빠른 시작 (로컬)
 
 1. 리포지터리 클론
