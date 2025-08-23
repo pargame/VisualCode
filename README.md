@@ -64,6 +64,42 @@ curl -fsS "$URL" | grep -q '<div id="root"' || (echo 'Root div not found' && exi
 echo "Smoke checks passed"
 ```
 
+## 용어 정리: 스모크 체크(smoke check)
+"스모크 체크"는 배포 후 서비스의 기본 가용성을 빠르게 확인하는 간단한 검증 단계입니다. 전체 테스트 스위트를 실행하지 않고도 "서비스가 최소한의 동작을 하는가"를 판단합니다. 이 저장소에서는 다음 항목을 예시로 사용합니다:
+- HTTP 200 응답 확인
+- 주요 HTML 요소(예: `<div id="root">`) 존재 확인
+- 빌드된 핵심 자산(js/css)의 200 응답 확인
+
+이 검사는 GitHub Actions 워크플로우 내에서 자동으로 실행될 수 있으며(`docs/CI_SMOKE.md` 참고), 실패 시 워크플로우를 실패 처리하여 배포 롤아웃을 막습니다.
+
+## 자동화 상세 (CI 워크플로우 요약)
+아래는 이 리포지터리에서 권장하는 자동화(워크플로우) 흐름의 핵심 단계와 사용된 액션입니다. 실제 워크플로우 파일은 `.github/workflows/deploy-pages.yml`에 정의되어 있습니다.
+
+1. 체크아웃
+	- `actions/checkout@v4`로 소스 체크아웃
+2. Node 설정 및 캐시
+	- `actions/setup-node@v4`로 Node 버전 고정(예: 18)
+	- npm 캐시 사용으로 의존성 복원 가속
+3. 의존성 설치
+	- `npm ci` 권장(재현 가능한 설치, `package-lock.json` 필요)
+4. 빌드
+	- `npm run build` (Vite 사용)
+5. 아티팩트 처리 / 배포
+	- 빌드 산출물을 `upload-pages-artifact@v2`로 업로드하거나 직접 `actions/deploy-pages@v4`를 사용해 Pages에 배포
+	- publish directory는 `dist/`, `build/`, `public/` 중 존재하는 경로를 선택하도록 구성
+6. 배포 후 검증
+	- 스모크 체크(위 용어 정의) 실행. 실패 시 워크플로우를 종료하여 배포를 중단합니다.
+
+권한 및 보안
+- 워크플로우 권한: Pages 배포를 위해 `pages: write`, `contents: write`, `id-token: write` 등이 필요할 수 있습니다(워크플로우 구현에 따라 조정).
+- 시크릿: 배포에 필요한 민감값은 GitHub Settings > Secrets and variables > Actions에 저장하세요.
+
+추가 팁
+- `package-lock.json`을 항상 커밋해 `npm ci`가 안정적으로 동작하도록 하세요.
+- Node 버전(로컬/CI)을 일치시키면 빌드 오류 원인 중 상당 부분을 줄일 수 있습니다.
+- 빌드가 메모리 문제로 실패하면 빌드 옵션(예: esbuild 설정)이나 CI 머신사양을 검토하세요.
+
+
 ## 표준 아키텍처 (정의)
 이 프로젝트는 경량 SPA를 대상으로 한 표준 아키텍처를 따릅니다. 목적은 개발 편의성과 배포 안전성을 동시에 확보하는 것입니다.
 
