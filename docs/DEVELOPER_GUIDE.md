@@ -12,6 +12,27 @@
 - 린트: `npm run lint`
 - 테스트: `npm run test -- --run`
 
+권장 환경
+
+- 권장 Node 버전: 20.x (프로젝트는 Vite 최신 버전 호환을 위해 Node 20을 권장합니다)
+- nvm 사용을 권장: 루트에 `.nvmrc`가 포함되어 있습니다. 설치 후 `nvm use`로 권장 버전을 적용하세요.
+
+gh CLI 사용 예시 (더 상세)
+
+```bash
+# 최근 실행 10개 보기
+gh run list --repo <owner>/<repo> --limit 10
+
+# 특정 실행 로그 보기
+gh run view <run-id> --repo <owner>/<repo> --log
+
+# 웹에서 보기
+gh run view <run-id> --repo <owner>/<repo> --web
+
+# preview artifact 다운로드
+gh run download <run-id> --repo <owner>/<repo> --name preview-dist
+```
+
 테스트 추가
 
 - 테스트 파일 위치: `test/*.test.jsx` 또는 `test/*.spec.jsx`
