@@ -84,6 +84,11 @@
 
 위 정책은 `.github/workflows/dependabot-automerge.yml`에 구현되어 있습니다.
 
+## 릴리즈 및 소유권
+
+- 릴리즈 초안 자동화: `release-drafter`를 사용해 `main`에 머지된 PR을 기반으로 릴리스 초안을 자동 생성합니다. 구성 파일: `.github/release-drafter.yml` 및 워크플로우 `.github/workflows/release-drafter.yml`.
+- 코드 소유자: `.github/CODEOWNERS`에 명시된 소유자는 PR 리뷰 요청 대상이 될 수 있으며, 중요 변경에 대해 자동 리뷰 요청을 설정할 수 있습니다.
+
 ## 현재 취약점 요약 (간단)
 
 - 2025-08-24: `micromatch`에 대한 ReDoS 취약점으로 인한 2개의 moderate 취약점이 감지되었습니다. 영향을 받는 패키지는 `lint-staged`를 통해 전이적으로 포함됩니다.

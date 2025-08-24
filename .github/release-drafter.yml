@@ -1,0 +1,12 @@
+template: |
+  ## What's Changed
+  This release includes the following changes pulled from merged PRs.
+
+  $CHANGES
+
+  ## Contributors
+  Thank you to all contributors!
+
+change-template:
+  minor: "### Minor changes\n$CHANGES"
+  patch: "### Patch changes\n$CHANGES"
