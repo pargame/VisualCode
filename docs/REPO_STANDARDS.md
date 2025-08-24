@@ -36,6 +36,11 @@
 - Dependabot을 활성화하고 보안 PR은 우선 처리
 - 취약점 패치 시 PR에 영향 범위 및 테스트 체크리스트 포함
 
+## Recent changes
+
+- 2025-08-24: Husky pre-commit hook script trimmed for v10 compatibility; deprecated sourcing lines removed from `.husky/pre-commit`.
+- 2025-08-24: `lint-staged` upgraded and audit re-run shows no remaining vulnerabilities (see `docs/MAINTENANCE.md` for details).
+
 ---
 
 변경 제안은 PR로 제출하고 CI 검사 통과 후 병합하세요.

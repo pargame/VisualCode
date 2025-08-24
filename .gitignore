@@ -1,12 +1,13 @@
+audit_total.txt
+ehthumbs.db
 # Node
 node_modules/
 npm-debug.log*
 yarn-error.log*
 
 # Build outputs
-build/
 dist/
-# ignore public folder but allow tracking a single index.html for quick Pages testing
+build/
 public/
 !public/index.html
 
@@ -16,11 +17,13 @@ public/
 # macOS
 .DS_Store
 
-# Ignore GitHub Pages workflow artifacts (local)
-/.cache/
+# Caches and coverage
+.cache/
+.vite/
+coverage/
 
 # Local audit/build artifacts (generated during maintenance)
-audit.json
+
 audit_total.txt
 build.log
 
@@ -36,9 +39,7 @@ UserNotification.md
 .idea/
 
 # Logs and reports
-.log
-.log.*
-npm-debug.log*
+*.log
 
 # Lockfiles (keep package-lock but ignore shrinkwrap if present)
 npm-shrinkwrap.json

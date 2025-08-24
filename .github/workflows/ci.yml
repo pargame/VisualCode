@@ -14,6 +14,8 @@ jobs:
         node-version: [20]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
         # persist-credentials is true by default which allows pushing from the runner when permitted
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -33,7 +35,12 @@ jobs:
           if ! git diff --quiet; then
             git add -A
             git commit -m "chore: apply formatting and lint fixes from CI"
-            git push
+            # push back to the PR branch safely (when head_ref is present)
+            if [ -n "${{ github.head_ref }}" ]; then
+              git push origin HEAD:refs/heads/${{ github.head_ref }} || echo "Push failed (protected branch or permissions)"
+            else
+              git push || echo "Push failed (detached HEAD or no head_ref)"
+            fi
           else
             echo "No formatting/lint changes"
           fi

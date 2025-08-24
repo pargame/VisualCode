@@ -13,3 +13,9 @@
 *.jpeg binary
 *.gif binary
 *.pdf binary
+
+# Ensure lockfiles and config files keep LF
+package-lock.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
