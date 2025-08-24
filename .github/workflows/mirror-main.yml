@@ -2,7 +2,7 @@ name: Mirror main to main-backup
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   schedule:
     - cron: '0 3 * * 1' # 매주 월요일 UTC 03:00 (로컬 시간에 맞추려면 조정하세요)
 
