@@ -141,6 +141,8 @@
   - `micromatch` (ReDoS, moderate) surfaced via `lint-staged`. Fixed by upgrading `lint-staged` to `16.1.5` in `package.json`.
   - Post-fix audit report shows zero vulnerabilities (see `audit_report_after2.json`).
 
+- 2025-08-24: Fixed Deploy to GitHub Pages workflow to avoid linting built artifacts. Added `.eslintignore` to exclude `dist`, `build`, `public`, and `node_modules` from CI linting to prevent false-positive errors on bundled output.
+
 - Notes:
   - If you maintain the Husky hooks, run `npm run prepare` locally after `npm install` to ensure hooks are installed.
   - For any force audit fixes (`npm audit fix --force`), prefer creating a targeted branch/PR (`fix/security/<issue>`) and run full CI validation before merging.
