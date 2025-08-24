@@ -57,6 +57,18 @@ gh run download <run-id> --repo <owner>/<repo> --name preview-dist
 
 - Husky가 설치되어 있으며, pre-commit 훅에서 `lint-staged`를 통해 변경 파일에 대해 ESLint와 Prettier가 실행됩니다.
 
+주의 (ESLint v9 / Husky v9)
+
+- 이 저장소는 ESLint v9(flat config)와 Husky v9로 업데이트되었습니다. 로컬에서 다음 순서를 따르세요:
+  1. `npm install`로 의존성 설치
+
+2.  `npm run prepare`를 실행해 Husky 훅을 설치(`prepare` 스크립트가 `husky install`을 실행함)
+3.  `npm run lint` 및 `npm run format`을 실행해 로컬에서 규칙을 확인/적용
+
+- ESLint v9은 기존의 `.eslintrc.*` 방식과 다르게 `eslint.config.js`(혹은 `eslint.config.cjs`)형태의 flat config를 사용합니다. 이 저장소는 이미 `eslint.config.cjs`를 포함하고 있으므로 별도 설정 없이 동작해야 합니다. 문제가 발생하면 `eslint.config.cjs`와 `.editorconfig`, `.prettierrc`를 확인하세요.
+
+- Husky v9은 설치 후 훅 스크립트 호환성에 주의를 기울여야 합니다. `npm run prepare`를 실행하면 훅이 설치되며, 훅이 정상 동작하는지 간단히 `git add . && git commit -m "test"`로 확인할 수 있습니다.
+
 PR preview artifact
 
 - Pull Request를 열면 GitHub Actions가 빌드 산출물을 `preview-dist`라는 아티팩트로 업로드합니다.
