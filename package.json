@@ -8,9 +8,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint 'src/**/*.{js,jsx}'",
-    "format": "prettier --write .",
-    "check:format": "prettier --check .",
+  "format": "prettier --write .",
+  "check:format": "prettier --check .",
     "test": "vitest",
+  "audit": "npm audit --json",
+  "audit:fix": "npm audit fix",
+  "audit:fix:force": "npm audit fix --force",
+  "ci:smoke": "npm ci && npm run build",
     "prepare": "husky install"
   },
   "dependencies": {

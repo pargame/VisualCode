@@ -11,11 +11,26 @@
 - 포맷: `npm run format`
 - 린트: `npm run lint`
 - 테스트: `npm run test -- --run`
+ - 취약점 조회: `npm run audit`
+ - 취약점 자동 수리(로컬 검토): `npm run audit:fix` 또는 `npm run audit:fix:force` (검토 후 사용)
+ - 간단 CI 재현(설치+빌드): `npm run ci:smoke`
 
 권장 환경
 
 - 권장 Node 버전: 20.x (프로젝트는 Vite 최신 버전 호환을 위해 Node 20을 권장합니다)
 - nvm 사용을 권장: 루트에 `.nvmrc`가 포함되어 있습니다. 설치 후 `nvm use`로 권장 버전을 적용하세요.
+
+nvm 사용 예시 (macOS + Homebrew)
+
+```bash
+brew install nvm
+mkdir -p ~/.nvm
+echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.zshrc
+echo 'source $(brew --prefix nvm)/nvm.sh' >> ~/.zshrc
+source ~/.zshrc
+nvm install
+nvm use
+```
 
 gh CLI 사용 예시 (더 상세)
 
