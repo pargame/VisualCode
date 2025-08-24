@@ -29,11 +29,13 @@
 ## 긴급 조치
 
 - 배포 실패 시
+
   1. Actions 로그에서 실패 단계 확인
   2. 로컬에서 동일한 단계(예: `npm ci`, `npm run build`) 재현
   3. 필요한 경우 의존성 롤백 또는 코드 수정
-  
+
   ### CI 실패 시 권장 트리아지
+
   1. 실패한 워크플로우의 'Logs'를 열어 실패 단계(예: lint, test, build)를 확인
   2. 실패가 재현 가능한지 로컬에서 `npm ci && npm run <failing-step>`로 시도
   3. 포맷 문제일 경우 `npm run format`로 자동 수정 후 커밋
