@@ -12,6 +12,8 @@
 [![CI](https://github.com/pargame/VisualCode/actions/workflows/ci.yml/badge.svg)](https://github.com/pargame/VisualCode/actions/workflows/ci.yml)
 [![Dependabot status](https://img.shields.io/badge/dependabot-enabled-brightgreen)](https://github.com/pargame/VisualCode/pulls)
 
+Node environment: `.nvmrc` is provided. Use `nvm install && nvm use` to match CI Node 20.
+
 ## 빠른 시작 (로컬)
 
 1. 리포지터리 클론

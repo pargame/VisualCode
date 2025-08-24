@@ -40,6 +40,76 @@
 
 - 2025-08-24: Imported local audit reports for traceability: `audit_report_after.json` and `audit_report_after2.json` (see repository root). These show zero known vulnerabilities after remediation.
 - 2025-08-24: Published release for dependency upgrades: [v0.0.1-deps-20250824](https://github.com/pargame/VisualCode/releases/tag/v0.0.1-deps-20250824) (React 19, ESLint 9, Husky 9).
+  Release assets: `VisualCode-dist-v0.0.1-deps-20250824.zip` attached to the release (build output `dist/`).
+
+### Release asset upload & verification
+
+- Build artifacts (Vite): `dist/` — create the zip locally or in CI and attach to a GitHub Release. Do not commit large binary artifacts into the repository; keep them as release assets.
+- Recommended ephemeral paths (CI/local): `/tmp/VisualCode-dist-<tag>.zip` or `artifacts/VisualCode-dist-<tag>.zip`.
+- Example: upload with the GitHub CLI (used in our maintenance run):
+
+  gh release upload v0.0.1-deps-20250824 /tmp/VisualCode-dist-v0.0.1-deps-20250824.zip --repo pargame/VisualCode --clobber
+
+- Verify the asset exists via the GitHub UI or GitHub CLI:
+
+  gh release view v0.0.1-deps-20250824 --repo pargame/VisualCode --json assets
+
+  # Or list asset names (requires `jq`):
+
+  gh release view v0.0.1-deps-20250824 --repo pargame/VisualCode --json assets -q '.assets[].name'
+
+- Browser verification: https://github.com/pargame/VisualCode/releases/tag/v0.0.1-deps-20250824 — the asset should appear under "Assets".
+
+Notes:
+
+- Prefer storing artifacts only on GitHub Releases (or a dedicated artifact storage) rather than committing them to the repo. If you must keep a copy in-tree for traceability, use a dedicated `releases/` or `artifacts/` folder and consider adding a small CHECKSUM file; still prefer the GitHub Release as the single source of truth.
+- If you need automated checks after upload, add a small CI job that calls `gh release view --json assets` and fails if the expected asset name is missing.
+
+### Checksums and release integrity
+
+We now generate a SHA256 checksum for every release artifact and upload it alongside the zip. This allows consumers to verify integrity after downloading.
+
+Generation (CI): `sha256sum artifacts/VisualCode-dist-<tag>.zip > artifacts/VisualCode-dist-<tag>.sha256`
+
+Verification (local):
+
+```bash
+# download assets from the Releases page or via gh
+gh release download v0.0.1-deps-20250824 --repo pargame/VisualCode --pattern "VisualCode-dist-v0.0.1-deps-20250824.*"
+# verify checksum
+sha256sum -c VisualCode-dist-v0.0.1-deps-20250824.sha256
+```
+
+Recommendation: Consumers should verify checksums after downloading, and automation should fail CI if checksum verification fails.
+
+### Automated release upload (recommended)
+
+We provide a reproducible workflow that builds the site and uploads a release asset when a tag matching `v*` is pushed: `.github/workflows/release-upload.yml`.
+
+How it works:
+
+- Push a tag (e.g., `git tag v0.0.2 && git push origin v0.0.2`). The workflow will:
+  1. Checkout the tag
+  2. Run `npm ci` and `npm run build`
+  3. Create `artifacts/VisualCode-dist-<tag>.zip` from `dist/`
+  4. Upload the zip as a release asset and verify its presence
+
+Notes:
+
+- This reduces the need for manual `gh release upload` steps and keeps releases reproducible from CI. The workflow uses the repository `GITHUB_TOKEN`; if you need cross-repo uploads or additional permissions, consider a personal access token stored in secrets.
+- If you prefer manual uploads for signed binaries or special handling, the manual `gh release upload` approach in docs remains supported.
+
+Local helper: creating a release zip
+
+You can generate the same zip artifact locally for testing or manual uploads with:
+
+```bash
+# optionally set TAG env var; otherwise package.json version is used
+TAG=dev-local npm run release:zip
+# result: artifacts/VisualCode-dist-<TAG>.zip and (CI creates a .sha256 when uploading)
+```
+
+Use this when you want to validate the zip locally before creating a tag and pushing.
 
 Next steps:
 

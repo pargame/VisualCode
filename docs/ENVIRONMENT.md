@@ -6,6 +6,7 @@
 
 - 요구사항
   - Node.js 20.x (권장: 20.x LTS)
+  - repo 루트의 `.nvmrc` 파일을 사용하여 Node 버전을 고정합니다 (현재: 20)
   - npm 9 이상 (권장: npm 10+)
   - Git
   - VS Code (옵션)

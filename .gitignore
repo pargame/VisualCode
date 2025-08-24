@@ -27,6 +27,11 @@ coverage/
 audit_total.txt
 build.log
 
+# Temporary release artifacts created during maintenance or CI
+/tmp/VisualCode-dist-*.zip
+artifacts/VisualCode-dist-*.zip
+artifacts/VisualCode-dist-*.sha256
+
 # Local user notes
 UserFile.md
 UserNotification.md

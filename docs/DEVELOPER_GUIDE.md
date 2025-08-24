@@ -48,6 +48,35 @@ gh run view <run-id> --repo <owner>/<repo> --web
 gh run download <run-id> --repo <owner>/<repo> --name preview-dist
 ```
 
+## 릴리스(로컬) 빠른 가이드
+
+CI 자동 릴리스를 우선 권장합니다. 로컬에서 수동 릴리스를 할 경우 아래 절차를 따르세요.
+
+1. 빌드 및 아티팩트 생성
+
+```bash
+npm ci
+npm run build
+TAG=v0.0.1 npm run release:zip
+sha256sum artifacts/VisualCode-dist-v0.0.1.zip > artifacts/VisualCode-dist-v0.0.1.sha256
+```
+
+2. 릴리스 업로드
+
+```bash
+gh release create v0.0.1 --repo pargame/VisualCode --title "v0.0.1" --notes "Release from local" --attach artifacts/VisualCode-dist-v0.0.1.zip --attach artifacts/VisualCode-dist-v0.0.1.sha256
+```
+
+3. 업로드 확인
+
+```bash
+gh release view v0.0.1 --repo pargame/VisualCode --json assets -q '.assets[].name'
+```
+
+## nvm 및 Node 버전
+
+루트에 `.nvmrc`가 포함되어 있으며 권장 Node 버전은 20입니다. 새 개발자는 `nvm install && nvm use`로 환경을 맞춰주세요.
+
 테스트 추가
 
 - 테스트 파일 위치: `test/*.test.jsx` 또는 `test/*.spec.jsx`

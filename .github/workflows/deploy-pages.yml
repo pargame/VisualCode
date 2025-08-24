@@ -208,3 +208,34 @@ jobs:
           # Force-update remote gh-pages with backup
           git push origin origin/gh-pages-backup:gh-pages --force
           echo "Rollback: origin/gh-pages has been restored from origin/gh-pages-backup"
+
+  verify-release-asset:
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Check for release asset via GitHub CLI
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install gh (GitHub CLI)
+        run: |
+          set -euo pipefail
+          if ! command -v gh >/dev/null 2>&1; then
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install -y gh
+          fi
+
+      - name: Verify expected release asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG=${{ github.ref_name }}
+          OWNER=${{ github.repository_owner }}
+          REPO=${{ github.event.repository.name }}
+          echo "Verifying release assets for $TAG on $OWNER/$REPO"
+          gh release view "$TAG" --repo "$OWNER/$REPO" --json assets -q '.assets[].name' || (echo "Release $TAG not found or no assets" && exit 1)

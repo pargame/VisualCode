@@ -24,3 +24,8 @@ package-lock.json text eol=lf
 *.svg binary
 *.webp binary
 *.ico binary
+
+# Ensure artifacts are not treated as text
+artifacts/* binary
+*.zip binary
+*.sha256 text eol=lf
