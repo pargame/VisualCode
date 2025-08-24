@@ -72,18 +72,23 @@ jobs:
             echo "publish_dir=public" >> $GITHUB_OUTPUT
           fi
 
-      - name: Upload pages artifact
-        # use v2 to avoid deprecated internal dependency on upload-artifact@v3
-        uses: actions/upload-pages-artifact@v2
-        with:
-          path: ${{ steps.find_dir.outputs.publish_dir }}
+      - name: Upload placeholder (no-op)
+        run: echo "Build finished; publish_dir=${{ steps.find_dir.outputs.publish_dir }}"
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to gh-pages via action
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: ${{ needs.build.outputs.publish_dir }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   smoke-check:
     needs: deploy
