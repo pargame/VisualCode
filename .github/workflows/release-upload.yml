@@ -94,3 +94,23 @@ jobs:
             echo "Checksum mismatch" && exit 1
           fi
           echo "Checksum OK"
+
+      - name: Create issue on release verification failure
+        if: ${{ failure() }}
+        uses: actions/github-script@v6
+        env:
+          TAG: ${{ github.ref_name }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const tag = process.env.TAG || context.ref;
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            const title = `Release verification failed: ${tag}`;
+            const body = `Release verification for tag **${tag}** failed in workflow run: ${runUrl}\n\nPlease investigate the release-upload job (upload, checksum generation, or GitHub Releases availability).`;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ["release", "ci-failure"]
+            });
