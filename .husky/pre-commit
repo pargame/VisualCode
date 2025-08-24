@@ -1,4 +1,5 @@
 #!/bin/sh
-# Husky pre-commit hook (trimmed for Husky v10 compatibility)
-# Run lint-staged to format and lint staged files
+# Husky pre-commit hook (v10+ compatible)
+# This hook runs lint-staged for staged files. Keep it minimal.
+command -v npx >/dev/null 2>&1 || exit 0
 npx --no-install lint-staged || true
