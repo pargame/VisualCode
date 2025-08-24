@@ -64,6 +64,18 @@
 - Dependabot 설정은 `.github/dependabot.yml`에 있으며, 주간 스케줄로 npm 의존성 업데이트 PR을 생성합니다.
 - 현재 정책: major Vite 업데이트는 자동화에서 제외(수동 검토 필요).
 
+### Dependabot 자동 병합 정책
+
+- 목적: 보안·비파괴적(패치/마이너) 의존성 PR을 테스트 통과 시 자동으로 병합해 유지보수 부담을 줄입니다.
+- 규칙 요약:
+  - 자동 병합은 PR 작성자가 Dependabot일 때만 동작
+  - `dependencies` 라벨이 있는 PR에만 적용
+  - CI 모든 체크가 성공해야 병합
+  - 병합 방식: squash, 병합 후 브랜치 삭제
+  - 메이저 업그레이드는 기존 `.github/dependabot.yml`의 ignore 규칙에 따라 수동 처리
+
+위 정책은 `.github/workflows/dependabot-automerge.yml`에 구현되어 있습니다.
+
 ## 현재 취약점 요약 (간단)
 
 - 2025-08-24: `micromatch`에 대한 ReDoS 취약점으로 인한 2개의 moderate 취약점이 감지되었습니다. 영향을 받는 패키지는 `lint-staged`를 통해 전이적으로 포함됩니다.

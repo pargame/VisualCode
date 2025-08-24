@@ -1,0 +1,20 @@
+name: Automerge Dependabot updates
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Automerge when CI passes
+        uses: pascalgn/automerge-action@v0.15.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          merge_method: squash
+          delete_branch: true
+          min_approvals: 0
+          require_status: true
+          require_label: dependencies
