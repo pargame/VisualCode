@@ -49,26 +49,25 @@ export default function App() {
   useEffect(() => {
     function onAnyClick(e) {
       // ignore clicks that originate from interactive controls, nodes/editor, or the board itself
-      const el = e.target;
       if (!boardRef.current) return;
-      // defensive: some elements may not implement closest
-      const isInteractive = (() => {
-        try {
-          return (
-            (el &&
-              el.closest &&
-              (el.closest('.editor') ||
-                el.closest('button') ||
-                el.closest('textarea') ||
-                el.closest('input') ||
-                el.closest('.node') ||
-                el.closest('.board'))) ||
-            false
-          );
-        } catch (err) {
-          return false;
-        }
-      })();
+      // normalize target to an Element in case the event target is a text node or other non-element
+      let el = e.target;
+      try {
+        // climb from non-element nodes to their nearest parent element
+        while (el && el.nodeType !== 1) el = el.parentElement;
+      } catch (err) {
+        el = null;
+      }
+
+      const isInteractive = !!(
+        el &&
+        (el.closest('.editor') ||
+          el.closest('button') ||
+          el.closest('textarea') ||
+          el.closest('input') ||
+          el.closest('.node') ||
+          el.closest('.board'))
+      );
 
       if (isInteractive) return;
 
