@@ -82,6 +82,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js (for deploy build)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Install and build (deploy)
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f yarn.lock ]; then
+            corepack enable
+            yarn install --frozen-lockfile
+          elif [ -f package.json ]; then
+            npm install
+          fi
+          if npm run | grep -q "build"; then
+            npm run build
+          fi
+
       - name: Deploy to gh-pages via action
         uses: JamesIves/github-pages-deploy-action@v4
         with:
