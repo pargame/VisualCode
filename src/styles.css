@@ -63,7 +63,11 @@ a {
   margin: 0 auto 3rem;
 }
 .board {
-  background:
+  /* Ensure the board has an opaque background so the global body grid
+     (drawn with body::before) doesn't show through and cause a visual
+     offset relative to the board's own grid. */
+  background-color: var(--bg);
+  background-image:
     linear-gradient(0deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
   background-size: 24px 24px;

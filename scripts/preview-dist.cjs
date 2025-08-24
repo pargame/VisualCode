@@ -40,6 +40,16 @@ const server = http.createServer((req, res) => {
   // Normalize URL and prevent path traversal
   const decodeUrl = decodeURIComponent(req.url.split('?')[0] || '/');
   let reqPath = decodeUrl.replace(/^\/+/, '');
+
+  // Support builds with a base path (example: /VisualCode/). If the
+  // built index.html references assets under /VisualCode/assets/...,
+  // strip the leading base segment so files are served from dist/.
+  if (reqPath.startsWith('VisualCode/')) {
+    reqPath = reqPath.replace(/^VisualCode\//, '');
+  }
+  if (reqPath === 'VisualCode') {
+    reqPath = 'index.html';
+  }
   if (!reqPath) reqPath = 'index.html';
 
   const filePath = path.join(root, reqPath);
