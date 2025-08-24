@@ -10,6 +10,7 @@
 - 포함된 항목: Vite 설정(`vite.config.js`), 간단한 React 앱(`src/`), CI 워크플로우 문서(`.github/workflows/deploy-pages.yml` 문서화), 운영 문서(`docs/`)
 
 [![CI](https://github.com/pargame/VisualCode/actions/workflows/ci.yml/badge.svg)](https://github.com/pargame/VisualCode/actions/workflows/ci.yml)
+[![Dependabot status](https://img.shields.io/badge/dependabot-enabled-brightgreen)](https://github.com/pargame/VisualCode/pulls)
 
 ## 빠른 시작 (로컬)
 
