@@ -1,0 +1,36 @@
+name: Mirror main to main-backup
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * 1' # 매주 월요일 UTC 03:00 (로컬 시간에 맞추려면 조정하세요)
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create or update main-backup
+        run: |
+          TARGET_BRANCH=main-backup
+          # Create local branch from main
+          git checkout -B "$TARGET_BRANCH"
+          # Force push to update mirror (this handles history rewrites)
+          git push --force origin "$TARGET_BRANCH"
+
+      - name: Cleanup
+        run: git checkout -
