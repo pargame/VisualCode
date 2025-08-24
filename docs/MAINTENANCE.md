@@ -1,8 +1,3 @@
-### Developer experience: editorconfig & pre-commit hook
-
-- Added an `.editorconfig` to standardize basic editor settings (encoding, line endings, indent, max line length).
-- Added a Husky `pre-commit` hook that runs `lint-staged` to auto-fix/format staged files. Ensure you run `npm install` locally to have Husky installed and `npm run prepare` will install the Git hooks.
-
 # Maintenance
 
 프로젝트 유지보수 및 정기 작업 가이드입니다.
@@ -35,14 +30,6 @@
   2. 로컬에서 동일한 단계(예: `npm ci`, `npm run build`) 재현
   3. 필요한 경우 의존성 롤백 또는 코드 수정
 
-  ### CI 실패 시 권장 트리아지
-  1. 실패한 워크플로우의 'Logs'를 열어 실패 단계(예: lint, test, build)를 확인
-  2. 실패가 재현 가능한지 로컬에서 `npm ci && npm run <failing-step>`로 시도
-  3. 포맷 문제일 경우 `npm run format`로 자동 수정 후 커밋
-  4. 의존성 문제일 경우 해당 PR 또는 브랜치에서 `npm audit`/`npm ls <pkg>`로 원인 추적
-  5. Dependabot PR의 경우 자동 병합 정책(문서 참조)에 따라 PR을 검토하고 필요 시 수동 수정
-  6. 반복적으로 동일한 실패가 발생하면 이슈를 생성하고 책임자에게 통보
-
 ### 취약점 발생 시 권장 플로우
 
 1. `npm audit`로 세부 정보 확인
@@ -54,8 +41,6 @@
 ## 백업 및 롤백
 
 - Pages는 정적 호스팅이므로 긴급 롤백은 이전 커밋을 main으로 재배포 (git revert 또는 강제 푸시)로 가능
-
-또한 로컬에서 빌드된 `dist/`를 강제로 `gh-pages`로 푸시하는 스크립트(`scripts/deploy-gh-pages.sh`)를 제공하므로, 긴급 복구가 필요할 때 이를 사용하면 빠르게 최신 정적 파일을 덮어쓸 수 있습니다. 사용 전 반드시 `npm run build`로 빌드하세요.
 
 ## 연락 정보
 
@@ -88,29 +73,6 @@
 
 위 정책은 `.github/workflows/dependabot-automerge.yml`에 구현되어 있습니다.
 
-## 브랜치 보호 및 미러 정책(권장)
-
-- 브랜치 보호(Branch protection) 권장 설정:
-  - `Require pull request reviews before merging` 활성화 (최소 1~2명)
-  - `Require status checks to pass before merging` 활성화 (CI, lint, test)
-  - `Include administrators`는 팀 정책에 따라 활성화
-  - `Restrict who can push to matching branches`로 일반 사용자 직접 푸시 제한
-
-- `main-backup` 정책:
-  - 자동화에 의해 업데이트되도록 허용(예: GitHub Actions bot). 사람의 직접 푸시를 제한하여 실수로 변경되는 것을 방지
-  - 필요 시 `main-backup`은 읽기 전용(Protected)으로 두고 복원 시 PR을 통한 절차를 사용
-
-- 미러 정책 권장 플로우:
-  - `main`에 강제 히스토리 재작성(force-push) 등 위험한 작업을 하기 전에는 반드시 `main-backup`으로 상태를 보존
-  - 정기 백업 외에 배포 전 혹은 민감 변경 전 스냅샷을 생성하는 단계(예: `backup/main/YYYYMMDD-HHMM`)를 도입하면 보수성 향상
-
-위 설정은 GitHub 리포지터리 UI에서 직접 적용하거나, 관리용 스크립트(토큰 필요)를 통해 자동화할 수 있습니다.
-
-## 릴리즈 및 소유권
-
-- 릴리즈 초안 자동화: `release-drafter`를 사용해 `main`에 머지된 PR을 기반으로 릴리스 초안을 자동 생성합니다. 구성 파일: `.github/release-drafter.yml` 및 워크플로우 `.github/workflows/release-drafter.yml`.
-- 코드 소유자: `.github/CODEOWNERS`에 명시된 소유자는 PR 리뷰 요청 대상이 될 수 있으며, 중요 변경에 대해 자동 리뷰 요청을 설정할 수 있습니다.
-
 ## 현재 취약점 요약 (간단)
 
 - 2025-08-24: `micromatch`에 대한 ReDoS 취약점으로 인한 2개의 moderate 취약점이 감지되었습니다. 영향을 받는 패키지는 `lint-staged`를 통해 전이적으로 포함됩니다.
@@ -132,19 +94,3 @@
 ---
 
 로컬에 기존 클론이 있을 경우 재클론 또는 브랜치 리셋(예: `git fetch --all` + `git reset --hard origin/main`)이 필요합니다.
-
-## Recent maintenance (auto edits)
-
-- 2025-08-24: Trimmed `.husky/pre-commit` to remove deprecated sourcing lines and improve compatibility with Husky v10.
-  - Removed duplicated `#!/usr/bin/env sh` and `. "$(dirname -- \"$0\")/_/husky.sh"` lines.
-  - Pre-commit now runs `npx --no-install lint-staged || true` to avoid failing hooks in CI environments.
-
-- 2025-08-24: Dependency audit result imported from local audits. Key finds and remediation:
-  - `micromatch` (ReDoS, moderate) surfaced via `lint-staged`. Fixed by upgrading `lint-staged` to `16.1.5` in `package.json`.
-  - Post-fix audit report shows zero vulnerabilities (see `audit_report_after2.json`).
-
-- 2025-08-24: Fixed Deploy to GitHub Pages workflow to avoid linting built artifacts. Added `.eslintignore` to exclude `dist`, `build`, `public`, and `node_modules` from CI linting to prevent false-positive errors on bundled output.
-
-- Notes:
-  - If you maintain the Husky hooks, run `npm run prepare` locally after `npm install` to ensure hooks are installed.
-  - For any force audit fixes (`npm audit fix --force`), prefer creating a targeted branch/PR (`fix/security/<issue>`) and run full CI validation before merging.
