@@ -64,7 +64,8 @@ jobs:
           # run prettier then eslint autofix
           if command -v npx >/dev/null 2>&1; then
             npx prettier --check . || npx prettier --write . || true
-            npx eslint . --ext .js,.jsx,.ts,.tsx --fix || true
+            # Lint only source files to avoid scanning built artifacts in dist/ or build/
+            npx eslint "src/**/*.{js,jsx,ts,tsx}" --fix || true
           fi
 
           # commit back to the PR branch when changes exist and repo is same
