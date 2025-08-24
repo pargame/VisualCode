@@ -90,20 +90,7 @@ jobs:
 
           if [ ! -d build ] && [ ! -d dist ] && [ ! -d public ]; then
             mkdir -p public
-            cat > public/index.html <<'HTML'
-            <!doctype html>
-            <html>
-              <head>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width,initial-scale=1">
-                <title>Empty GitHub Pages site</title>
-              </head>
-              <body>
-                <h1>This site was deployed from GitHub Actions</h1>
-                <p>No build artifact was found; the workflow generated this placeholder page.</p>
-              </body>
-            </html>
-          HTML
+            printf "%b" "<!doctype html>\n<html>\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n    <title>Empty GitHub Pages site</title>\n  </head>\n  <body>\n    <h1>This site was deployed from GitHub Actions</h1>\n    <p>No build artifact was found; the workflow generated this placeholder page.</p>\n  </body>\n</html>" > public/index.html
           fi
 
       - name: Determine publish directory
