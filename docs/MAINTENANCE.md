@@ -1,3 +1,8 @@
+### Developer experience: editorconfig & pre-commit hook
+
+- Added an `.editorconfig` to standardize basic editor settings (encoding, line endings, indent, max line length).
+- Added a Husky `pre-commit` hook that runs `lint-staged` to auto-fix/format staged files. Ensure you run `npm install` locally to have Husky installed and `npm run prepare` will install the Git hooks.
+
 # Maintenance
 
 프로젝트 유지보수 및 정기 작업 가이드입니다.
