@@ -284,4 +284,5 @@ git branch -D gh-pages-backup
 Notes:
 
 - The workflow now prefers `dist/` when present. If you see unexpected placeholder pages, check that `npm run build` produced the expected output and that `package-lock.json` is committed so CI uses `npm ci`.
+- Reworked token handling: the workflow was simplified to use `GITHUB_TOKEN` for automated issue creation to avoid YAML/linters complaining about conditionally-referenced secrets; see `docs/DEPLOYMENT.md` for a safe pattern to re-enable an explicit PAT (`DEPLOY_ISSUE_TOKEN`) when needed.
 - If you want stricter deploy auditing, we can add an automated Pages health check step that fails the workflow and opens an issue when the site does not return HTTP 200 or the expected root div.
