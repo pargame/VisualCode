@@ -31,8 +31,8 @@ export default function App() {
   }, [selectedId]);
 
   function handleBoardClick(e) {
-    // only create node when clicking directly on the board (not on a node)
-    if (e.target !== boardRef.current) return;
+    // create a node at the clicked position on the board
+    if (!boardRef.current) return;
     const rect = boardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -44,6 +44,43 @@ export default function App() {
     setNodes((s) => [...s, newNode]);
     setSelectedId(id);
   }
+
+  // allow creating nodes by clicking anywhere (outside interactive controls)
+  useEffect(() => {
+    function onAnyClick(e) {
+      // ignore clicks that originate from interactive controls or nodes/editor
+      const el = e.target;
+      if (!boardRef.current) return;
+      if (
+        el.closest &&
+        (el.closest('.editor') ||
+          el.closest('button') ||
+          el.closest('textarea') ||
+          el.closest('input') ||
+          el.closest('.node'))
+      ) {
+        return;
+      }
+
+      // compute coordinates relative to the board and clamp to its bounds
+      const rect = boardRef.current.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      let y = e.clientY - rect.top;
+      // clamp so clicks outside still produce a visible node along the board edges
+      x = Math.max(0, Math.min(x, rect.width));
+      y = Math.max(0, Math.min(y, rect.height));
+      const snapX = Math.round(x / GRID) * GRID;
+      const snapY = Math.round(y / GRID) * GRID;
+
+      const id = Date.now();
+      const newNode = { id, x: snapX, y: snapY, code: '# python\n' };
+      setNodes((s) => [...s, newNode]);
+      setSelectedId(id);
+    }
+
+    window.addEventListener('click', onAnyClick);
+    return () => window.removeEventListener('click', onAnyClick);
+  }, []);
 
   function handleSelect(nodeId) {
     setSelectedId(nodeId);
