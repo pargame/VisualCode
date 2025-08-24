@@ -1,0 +1,46 @@
+name: Weekly npm audit
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # every Monday at 03:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run npm audit (json)
+        run: npm audit --json > audit-report.json || true
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-report
+          path: audit-report.json
+      - name: Extract vulnerability count
+        id: extract
+        run: |
+          vuln=$(python - <<'PY'
+          import json
+          try:
+              d=json.load(open('audit-report.json'))
+              t=d.get('metadata',{}).get('vulnerabilities',{}).get('total',0)
+          except Exception:
+              t=0
+          print(t)
+          PY
+          )
+          echo "vuln_count=$vuln" >> $GITHUB_OUTPUT
+      - name: Create issue if vulnerabilities
+        uses: peter-evans/create-issue-from-file@v5
+        if: ${{ steps.extract.outputs.vuln_count != '0' }}
+        with:
+          title: 'Weekly security audit: vulnerabilities found'
+          content-filepath: audit-report.json
+          labels: security, audit

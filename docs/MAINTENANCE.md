@@ -1,3 +1,8 @@
+### Developer experience: editorconfig & pre-commit hook
+
+- Added an `.editorconfig` to standardize basic editor settings (encoding, line endings, indent, max line length).
+- Added a Husky `pre-commit` hook that runs `lint-staged` to auto-fix/format staged files. Ensure you run `npm install` locally to have Husky installed and `npm run prepare` will install the Git hooks.
+
 # Maintenance
 
 프로젝트 유지보수 및 정기 작업 가이드입니다.
@@ -29,9 +34,19 @@
 ## 긴급 조치
 
 - 배포 실패 시
+
   1. Actions 로그에서 실패 단계 확인
   2. 로컬에서 동일한 단계(예: `npm ci`, `npm run build`) 재현
   3. 필요한 경우 의존성 롤백 또는 코드 수정
+
+  ### CI 실패 시 권장 트리아지
+
+  1. 실패한 워크플로우의 'Logs'를 열어 실패 단계(예: lint, test, build)를 확인
+  2. 실패가 재현 가능한지 로컬에서 `npm ci && npm run <failing-step>`로 시도
+  3. 포맷 문제일 경우 `npm run format`로 자동 수정 후 커밋
+  4. 의존성 문제일 경우 해당 PR 또는 브랜치에서 `npm audit`/`npm ls <pkg>`로 원인 추적
+  5. Dependabot PR의 경우 자동 병합 정책(문서 참조)에 따라 PR을 검토하고 필요 시 수동 수정
+  6. 반복적으로 동일한 실패가 발생하면 이슈를 생성하고 책임자에게 통보
 
 ### 취약점 발생 시 권장 플로우
 
@@ -63,6 +78,23 @@
 
 - Dependabot 설정은 `.github/dependabot.yml`에 있으며, 주간 스케줄로 npm 의존성 업데이트 PR을 생성합니다.
 - 현재 정책: major Vite 업데이트는 자동화에서 제외(수동 검토 필요).
+
+### Dependabot 자동 병합 정책
+
+- 목적: 보안·비파괴적(패치/마이너) 의존성 PR을 테스트 통과 시 자동으로 병합해 유지보수 부담을 줄입니다.
+- 규칙 요약:
+  - 자동 병합은 PR 작성자가 Dependabot일 때만 동작
+  - `dependencies` 라벨이 있는 PR에만 적용
+  - CI 모든 체크가 성공해야 병합
+  - 병합 방식: squash, 병합 후 브랜치 삭제
+  - 메이저 업그레이드는 기존 `.github/dependabot.yml`의 ignore 규칙에 따라 수동 처리
+
+위 정책은 `.github/workflows/dependabot-automerge.yml`에 구현되어 있습니다.
+
+## 릴리즈 및 소유권
+
+- 릴리즈 초안 자동화: `release-drafter`를 사용해 `main`에 머지된 PR을 기반으로 릴리스 초안을 자동 생성합니다. 구성 파일: `.github/release-drafter.yml` 및 워크플로우 `.github/workflows/release-drafter.yml`.
+- 코드 소유자: `.github/CODEOWNERS`에 명시된 소유자는 PR 리뷰 요청 대상이 될 수 있으며, 중요 변경에 대해 자동 리뷰 요청을 설정할 수 있습니다.
 
 ## 현재 취약점 요약 (간단)
 

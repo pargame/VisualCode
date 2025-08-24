@@ -10,6 +10,7 @@
 - 포함된 항목: Vite 설정(`vite.config.js`), 간단한 React 앱(`src/`), CI 워크플로우 문서(`.github/workflows/deploy-pages.yml` 문서화), 운영 문서(`docs/`)
 
 [![CI](https://github.com/pargame/VisualCode/actions/workflows/ci.yml/badge.svg)](https://github.com/pargame/VisualCode/actions/workflows/ci.yml)
+[![Dependabot status](https://img.shields.io/badge/dependabot-enabled-brightgreen)](https://github.com/pargame/VisualCode/pulls)
 
 ## 빠른 시작 (로컬)
 
@@ -110,6 +111,10 @@ Dependabot
 - 캐싱: `actions/setup-node@v4`의 npm 캐시 기능을 사용해 의존성 복원 속도를 개선합니다.
 - 빌드: `npm run build`를 실행하고, 빌드 산출물을 아티팩트로 업로드한 뒤 `actions/deploy-pages@v4`(또는 `upload-pages-artifact@v2` + `deploy-pages`)로 GitHub Pages에 배포합니다.
 - 권한: Pages 배포에 필요한 최소 권한(`contents: write`, `pages: write`, `id-token: write`)을 문서화했습니다.
+
+Release notes
+
+- 자동 릴리스 초안: `release-drafter`가 `main`에 머지된 PR을 모아 릴리스 초안을 자동 생성합니다. 초안 템플릿과 워크플로우는 `.github/release-drafter.yml` 및 `.github/workflows/release-drafter.yml`를 참조하세요.
 
 ## 배포 검증 (스모크 체크)
 

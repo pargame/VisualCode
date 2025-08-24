@@ -1,0 +1,6 @@
+# Code owners for this repository
+# Format: <pattern> <owner>
+
+/.github/ @pargame
+/docs/ @pargame
+/src/ @pargame
