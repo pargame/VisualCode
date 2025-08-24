@@ -5,6 +5,8 @@ updates:
     schedule:
       interval: 'weekly'
     open-pull-requests-limit: 5
+    insecure-external-code: false
+    # Ignore major Vite updates; handle major upgrades manually with testing
     ignore:
       - dependency-name: 'vite'
         update-types: ['version-update:semver-major']

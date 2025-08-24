@@ -50,6 +50,16 @@
 |------|--------:|------|------|---------|
 | 2025-08-24 | pargame | docs/ENVIRONMENT.md | 권장 Node 버전 20으로 통일 | #NNN |
 
+## Dependabot 및 자동화
+
+- Dependabot 설정은 `.github/dependabot.yml`에 있으며, 주간 스케줄로 npm 의존성 업데이트 PR을 생성합니다.
+- 현재 정책: major Vite 업데이트는 자동화에서 제외(수동 검토 필요).
+
+## 현재 취약점 요약 (간단)
+
+- 2025-08-24: `micromatch`에 대한 ReDoS 취약점으로 인한 2개의 moderate 취약점이 감지되었습니다. 영향을 받는 패키지는 `lint-staged`를 통해 전이적으로 포함됩니다.
+- 권장 조치: `npm audit fix`로 우선 해결을 시도하고, 자동 수리로 해결되지 않으면 `fix/security/micromatch` 같은 브랜치에서 의존성 업데이트 PR 생성 후 CI 검증.
+
 ## Repository history rewrite (sensitive file removal)
 
 > 주의: 히스토리 재작성은 돌이킬 수 있는 작업이며 로컬 클론에 영향이 큽니다. 아래 지침을 따르세요.
