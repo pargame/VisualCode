@@ -155,6 +155,54 @@ export default function App() {
           <div className="storage-note">
             Saved to localStorage key: <code>{STORAGE_KEY}</code>
           </div>
+
+          <div className="import-export">
+            <input
+              id="import-file"
+              type="file"
+              accept="application/json"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const f = e.target.files && e.target.files[0];
+                if (!f) return;
+                const r = new FileReader();
+                r.onload = () => {
+                  try {
+                    const parsed = JSON.parse(r.result);
+                    if (Array.isArray(parsed)) {
+                      setNodes(parsed);
+                      setSelectedId(parsed.length ? parsed[0].id : null);
+                    }
+                  } catch (err) {
+                    // ignore invalid file
+                  }
+                };
+                r.readAsText(f);
+                // reset the input so same file can be re-selected later
+                e.target.value = '';
+              }}
+            />
+            <button onClick={() => document.getElementById('import-file').click()}>
+              Import nodes (.json)
+            </button>
+            <button
+              onClick={() => {
+                const blob = new Blob([JSON.stringify(nodes, null, 2)], {
+                  type: 'application/json',
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `visualcode-nodes-${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              Export nodes (.json)
+            </button>
+          </div>
         </aside>
       </div>
     </div>
