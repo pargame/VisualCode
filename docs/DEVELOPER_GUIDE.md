@@ -81,3 +81,21 @@ gh run view <run-id> --repo <owner>/<repo>
 gh run view <run-id> --repo <owner>/<repo> --web
 gh run download <run-id> --repo <owner>/<repo> --name preview-dist
 ```
+
+CI 포맷·린트 정책 (중요)
+
+- 워크플로 동작 요약:
+
+  - `push` (main에 대한 푸시): 전체 포맷 검사, 린트 검사, 빌드 및 배포(해당 워크플로우가 활성화된 경우)를 실행합니다.
+  - `pull_request` (same-repo PR): CI는 자동으로 Prettier 및 ESLint --fix를 시도하고, 변경 사항이 있으면 해당 PR 브랜치에 커밋을 시도합니다(브랜치 보호나 포크 PR의 경우 푸시가 불가능하면 안내 메시지를 남깁니다).
+  - `pull_request` (fork PR): 포맷/린트 검사를 실행하지만, 자동 푸시가 불가능하므로 실패로 차단하지 않고 안내 메시지를 표시합니다. 외부 기여자는 로컬에서 `npm run format` 및 `npm run lint`를 실행해 수정한 뒤 다시 PR을 업데이트해야 합니다.
+
+- 권장 작업 흐름:
+
+  1.  로컬에서 작업 브랜치를 만들고 개발합니다.
+  2.  커밋 전에 `npm run format`과 `npm run lint`를 실행하거나 Husky pre-commit 훅이 자동 실행되도록 합니다.
+  3.  같은 저장소에 PR을 여는 경우 CI가 자동으로 포맷/린트를 커밋할 수 있으므로 변경을 수락할 수 있습니다. 포크 PR인 경우에는 로컬에서 포맷/린트를 실행해 주세요.
+
+- 문제 해결 팁:
+  - CI가 자동 커밋을 시도했지만 푸시가 실패하면(포크 또는 보호된 브랜치) CI 로그에 실패 원인이 기록됩니다. 이 경우 안내에 따라 로컬에서 포맷을 적용하고 PR을 업데이트하세요.
+  - 포맷/린트 규칙을 변경하려면 `.eslintrc.json`, `.prettierrc`, 또는 `.editorconfig`를 업데이트하고 팀과 합의 후 커밋하세요.

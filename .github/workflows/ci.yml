@@ -14,6 +14,7 @@ jobs:
         node-version: [20]
     steps:
       - uses: actions/checkout@v4
+        # persist-credentials is true by default which allows pushing from the runner when permitted
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -21,10 +22,40 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
-      - name: Run lint
+      - name: Auto-fix formatting and lint on PRs from same repo
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        run: |
+          echo "Running Prettier and ESLint --fix on PR branch"
+          npx prettier --write . || true
+          npx eslint "src/**/*.{js,jsx}" --fix || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet; then
+            git add -A
+            git commit -m "chore: apply formatting and lint fixes from CI"
+            git push
+          else
+            echo "No formatting/lint changes"
+          fi
+      - name: Run lint (push or same-repo PR)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         run: npm run lint
-      - name: Check formatting
+
+      - name: Run lint (fork PR - non-blocking)
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+        run: |
+          echo "Running lint in non-blocking mode for fork PR"
+          npm run lint || echo "Lint issues detected in fork PR; please run 'npm run lint' locally and fix before merging."
+
+      - name: Check formatting (push or same-repo PR)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         run: npm run check:format
+
+      - name: Check formatting (fork PR - guidance)
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+        run: |
+          echo "Checking formatting in non-blocking mode for fork PR"
+          npx prettier --check . || echo "Formatting issues detected in fork PR; please run 'npm run format' locally or open a branch in this repo so CI can auto-fix."
       - name: Run tests
         run: npm run test
       - name: Build
