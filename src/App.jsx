@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 
 export default function App() {
   return (
@@ -7,5 +7,5 @@ export default function App() {
       <p>This is a minimal React + Vite app deployed via GitHub Actions.</p>
       <p>Replace this with your project source or update the workflow to match your build.</p>
     </main>
-  )
+  );
 }
