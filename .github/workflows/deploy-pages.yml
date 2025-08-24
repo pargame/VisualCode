@@ -106,6 +106,12 @@ jobs:
             echo "publish_dir=public" >> $GITHUB_OUTPUT
           fi
 
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: ${{ steps.find_dir.outputs.publish_dir }}
+
       - name: Upload placeholder (no-op)
         run: echo "Build finished; publish_dir=${{ steps.find_dir.outputs.publish_dir }}"
 
@@ -117,42 +123,49 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js (for deploy build)
-        uses: actions/setup-node@v4
+      - name: Download site artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          name: site
+          path: site
 
-      - name: Install and build (deploy)
+      - name: Debug site contents
         run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          elif [ -f yarn.lock ]; then
-            corepack enable
-            yarn install --frozen-lockfile
-          elif [ -f package.json ]; then
-            npm install
-          fi
-          if npm run | grep -q "build"; then
-            npm run build
-          fi
+          echo "Downloaded artifact contents:";
+          ls -la site || true;
+          du -sh site || true
 
-      - name: Determine deploy directory (deploy)
-        id: deploy_find_dir
+      - name: Prepare deploy site and decide if deploy is necessary
+        id: deploy_prepare
         run: |
-          # Determine where the build output was written during this deploy job
-          if [ -d dist ]; then
-            echo "publish_dir=dist" >> $GITHUB_OUTPUT
-          elif [ -d build ]; then
-            echo "publish_dir=build" >> $GITHUB_OUTPUT
-          elif [ -d public ]; then
-            echo "publish_dir=public" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          # ensure we have site directory from artifact
+          if [ -d site ]; then
+            echo "publish_dir=site" >> $GITHUB_OUTPUT
           else
-            # Fallback: create a placeholder so the deploy action has something to push
-            mkdir -p public
-            printf "%b" "<!doctype html>\n<html>\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n    <title>Empty GitHub Pages site</title>\n  </head>\n  <body>\n    <h1>This site was deployed from GitHub Actions</h1>\n    <p>No build artifact was found; the workflow generated this placeholder page.</p>\n  </body>\n</html>" > public/index.html
-            echo "publish_dir=public" >> $GITHUB_OUTPUT
+            mkdir -p site
+            printf "%b" "<!doctype html>\n<html>\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n    <title>Empty GitHub Pages site</title>\n  </head>\n  <body>\n    <h1>This site was deployed from GitHub Actions</h1>\n    <p>No build artifact was found; the workflow generated this placeholder page.</p>\n  </body>\n</html>" > site/index.html
+            echo "publish_dir=site" >> $GITHUB_OUTPUT
+          fi
+
+          # compute checksum of new site
+          NEW_SUM=$(find site -type f -exec sha256sum {} \; | sort | sha256sum | awk '{print $1}') || NEW_SUM=""
+          echo "NEW_SUM=$NEW_SUM"
+
+          # fetch gh-pages branch (if exists) to compare
+          git fetch origin gh-pages || true
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            mkdir -p /tmp/old_site
+            git --work-tree=/tmp/old_site checkout origin/gh-pages -- . || true
+            OLD_SUM=$(find /tmp/old_site -type f -exec sha256sum {} \; | sort | sha256sum | awk '{print $1}') || OLD_SUM=""
+          else
+            OLD_SUM=""
+          fi
+          echo "OLD_SUM=$OLD_SUM"
+
+          if [ -n "$OLD_SUM" ] && [ "$NEW_SUM" = "$OLD_SUM" ]; then
+            echo "No changes detected between build output and gh-pages; skipping deploy."
+            exit 0
           fi
 
       - name: Deploy to gh-pages via action
