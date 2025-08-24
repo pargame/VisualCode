@@ -10,19 +10,16 @@
 ## 주기적 작업
 
 - 빈도 권장
-
   - 매주: `npm audit` 실행 및 새로운 Dependabot PR 확인
   - 매월: 의존성 버전 업데이트(비파괴적 범위, `npm update`)와 CI 안정성 검토
   - 분기별: 핵심 런타임(예: Node) 및 빌드 도구(Vite, Vitest 등) 버전 검토
 
 - 실행 명령(로컬)
-
   - 취약점 조회: `npm audit` 또는 `npm run audit`
   - 안전 자동 수정: `npm audit fix` 또는 `npm run audit:fix`
   - 강제 수리(검토 후): `npm audit fix --force` 또는 `npm run audit:fix:force` (브랜치에서 PR로 진행)
 
 - 의존성 업데이트 전략
-
   - 직접(최상위) 의존성은 PR로 업데이트하고 CI를 통해 검증
   - 전이적(transitive) 의존성 경고는 우선 Dependabot에 맡기고, 중요 취약점은 수동 패치 또는 패키지 교체 고려
   - 메이저 업그레이드 시에는 변경 로그 확인과 로컬 빌드/테스트 통과를 필수로 함
@@ -34,13 +31,11 @@
 ## 긴급 조치
 
 - 배포 실패 시
-
   1. Actions 로그에서 실패 단계 확인
   2. 로컬에서 동일한 단계(예: `npm ci`, `npm run build`) 재현
   3. 필요한 경우 의존성 롤백 또는 코드 수정
 
   ### CI 실패 시 권장 트리아지
-
   1. 실패한 워크플로우의 'Logs'를 열어 실패 단계(예: lint, test, build)를 확인
   2. 실패가 재현 가능한지 로컬에서 `npm ci && npm run <failing-step>`로 시도
   3. 포맷 문제일 경우 `npm run format`로 자동 수정 후 커밋
@@ -94,14 +89,12 @@
 ## 브랜치 보호 및 미러 정책(권장)
 
 - 브랜치 보호(Branch protection) 권장 설정:
-
   - `Require pull request reviews before merging` 활성화 (최소 1~2명)
   - `Require status checks to pass before merging` 활성화 (CI, lint, test)
   - `Include administrators`는 팀 정책에 따라 활성화
   - `Restrict who can push to matching branches`로 일반 사용자 직접 푸시 제한
 
 - `main-backup` 정책:
-
   - 자동화에 의해 업데이트되도록 허용(예: GitHub Actions bot). 사람의 직접 푸시를 제한하여 실수로 변경되는 것을 방지
   - 필요 시 `main-backup`은 읽기 전용(Protected)으로 두고 복원 시 PR을 통한 절차를 사용
 
@@ -128,7 +121,6 @@
 2025-08-24: 리포지터리 히스토리에서 민감 파일을 제거하기 위해 로컬에서 미러를 만들고 히스토리를 재작성한 뒤 원격에 강제 푸시했습니다. 제거 대상(예시): `audit.json`, `audit_total.txt`, `build.log`, `.env`, `.idea`.
 
 - 로컬 영향 안내
-
   - 기존 로컬 클론이 있으면 반드시 `git fetch --all` 후 중요한 변경사항을 백업하고 `git reset --hard origin/main` 또는 재클론 권장
   - 강제 푸시로 인해 로컬 브랜치와 리모트가 불일치할 수 있으므로 팀원에게 공지 필요
 

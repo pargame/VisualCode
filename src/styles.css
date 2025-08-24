@@ -8,7 +8,13 @@ body,
   height: 100%;
 }
 body {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial;
   margin: 0;
   color: #111;
   background: var(--bg);
@@ -18,9 +24,12 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: linear-gradient(0deg, var(--grid) 1px, transparent 1px),
+  background-image:
+    linear-gradient(0deg, var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 24px 24px, 24px 24px;
+  background-size:
+    24px 24px,
+    24px 24px;
   pointer-events: none;
   z-index: 0;
 }
