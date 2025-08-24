@@ -25,3 +25,23 @@ PR preview artifact
 
 - Pull Request를 열면 GitHub Actions가 빌드 산출물을 `preview-dist`라는 아티팩트로 업로드합니다.
 - 리뷰어는 Actions의 'Artifacts'에서 `preview-dist`를 다운로드해 로컬에서 `npx serve dist` 등으로 미리보기를 확인할 수 있습니다.
+
+GitHub CLI (`gh`) 사용
+
+- 개발자는 로컬에서 GitHub Actions 실행 상태를 빠르게 확인하려면 `gh` CLI를 설치해 사용하세요.
+- 설치(macOS + Homebrew):
+
+```bash
+brew install gh
+gh auth login
+gh auth status
+```
+
+- 유용한 명령 예:
+
+```bash
+gh run list --repo <owner>/<repo> --limit 10
+gh run view <run-id> --repo <owner>/<repo>
+gh run view <run-id> --repo <owner>/<repo> --web
+gh run download <run-id> --repo <owner>/<repo> --name preview-dist
+```
