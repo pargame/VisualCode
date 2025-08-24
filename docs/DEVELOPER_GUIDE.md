@@ -97,3 +97,11 @@ CI 포맷·린트 정책 (중요)
 - 문제 해결 팁:
   - CI가 자동 커밋을 시도했지만 푸시가 실패하면(포크 또는 보호된 브랜치) CI 로그에 실패 원인이 기록됩니다. 이 경우 안내에 따라 로컬에서 포맷을 적용하고 PR을 업데이트하세요.
   - 포맷/린트 규칙을 변경하려면 `.eslintrc.json`, `.prettierrc`, 또는 `.editorconfig`를 업데이트하고 팀과 합의 후 커밋하세요.
+
+## CI auto-fix behavior (summary)
+
+- For pull requests opened from branches within this repository, CI will attempt to run Prettier and ESLint with `--fix` and commit any changes back to the source branch. If the branch is protected or the workflow lacks permissions, the push will fail and CI will add a helpful message to the run logs explaining the action required (typically: run `npm run format` and `npm run lint` locally, then push the fixes).
+
+- For pull requests opened from forks, CI runs format and lint checks but will not attempt to push changes back to the fork. Fork contributors should run `npm run format` and `npm run lint` locally and push the updates or open a branch on this repo so CI can commit fixes.
+
+- CI logs will contain details when auto-fix attempts occur; reviewers can check the "Actions" tab for the PR to see any auto-commit changes.
