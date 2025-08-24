@@ -27,6 +27,14 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
+      - name: Restore Vite cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.vite
+            node_modules/.cache/vite
+          key: ${{ runner.os }}-vite-${{ hashFiles('**/package-lock.json') }}
+
       - name: Prepare site output
         shell: bash
         run: |
@@ -163,6 +171,14 @@ jobs:
           fi
           echo "OLD_SUM=$OLD_SUM"
 
+          # print per-file checksums for debugging
+          echo "New site file checksums:"
+          find site -type f -exec sha256sum {} \; | sort || true
+          if [ -d /tmp/old_site ]; then
+            echo "Old site file checksums:"
+            find /tmp/old_site -type f -exec sha256sum {} \; | sort || true
+          fi
+
           if [ -n "$OLD_SUM" ] && [ "$NEW_SUM" = "$OLD_SUM" ]; then
             echo "No changes detected between build output and gh-pages; skipping deploy."
             exit 0
@@ -172,15 +188,28 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: ${{ needs.build.outputs.publish_dir }}
+          folder: site
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pick issue token (prefer DEPLOY_ISSUE_TOKEN when present)
+        id: pick_token
+        run: |
+          set -euo pipefail
+          # Access secrets directly inside the run block to avoid linter complaining about missing context
+          DEPLOY_ISSUE_TOKEN="${{ secrets.DEPLOY_ISSUE_TOKEN }}"
+          GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          if [ -n "$DEPLOY_ISSUE_TOKEN" ]; then
+            echo "token=$DEPLOY_ISSUE_TOKEN" >> $GITHUB_OUTPUT
+          else
+            echo "token=$GITHUB_TOKEN" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create issue on deploy failure
         if: failure()
         uses: actions-ecosystem/action-create-issue@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ steps.pick_token.outputs.token }}
           title: 'Deploy to Pages failed for commit ${{ github.sha }}'
           body: |
             The deploy job failed for commit `${{ github.sha }}` on branch `${{ github.ref_name }}`.
