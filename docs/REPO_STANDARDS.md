@@ -40,6 +40,18 @@
 
 - 2025-08-24: Husky pre-commit hook script trimmed for v10 compatibility; deprecated sourcing lines removed from `.husky/pre-commit`.
 - 2025-08-24: `lint-staged` upgraded and audit re-run shows no remaining vulnerabilities (see `docs/MAINTENANCE.md` for details).
+- 2025-08-24: Reverted `husky` in `package.json` from `^10.0.0` to `^8.0.0` due to npm registry unavailability for v10 at the time of upgrade. This resolves CI failures with "No matching version found for husky@^10.0.0" (ETARGET). CI will need to run to verify.
+
+Next steps:
+
+- Run CI on the branch to confirm the ETARGET error is resolved.
+- If `/husky` v10 becomes available upstream and we still want to upgrade, create a follow-up PR that:
+  - updates `package.json` to the desired `husky` version,
+  - runs `npm ci` locally and in CI to verify install,
+  - updates `.husky/*` scripts only if required by the new major, and
+  - documents changes in `docs/REPO_STANDARDS.md` and `docs/MAINTENANCE.md`.
+
+- Consider pinning `husky` with a more conservative semver (e.g., `8.x` / `~8.0.0`) if automatic upgrades cause instability.
 
 ---
 
