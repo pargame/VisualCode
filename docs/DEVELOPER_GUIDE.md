@@ -11,9 +11,9 @@
 - 포맷: `npm run format`
 - 린트: `npm run lint`
 - 테스트: `npm run test -- --run`
- - 취약점 조회: `npm run audit`
- - 취약점 자동 수리(로컬 검토): `npm run audit:fix` 또는 `npm run audit:fix:force` (검토 후 사용)
- - 간단 CI 재현(설치+빌드): `npm run ci:smoke`
+- 취약점 조회: `npm run audit`
+- 취약점 자동 수리(로컬 검토): `npm run audit:fix` 또는 `npm run audit:fix:force` (검토 후 사용)
+- 간단 CI 재현(설치+빌드): `npm run ci:smoke`
 
 권장 환경
 
