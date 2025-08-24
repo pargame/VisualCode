@@ -7,6 +7,4 @@ template: |
   ## Contributors
   Thank you to all contributors!
 
-change-template:
-  minor: "### Minor changes\n$CHANGES"
-  patch: "### Patch changes\n$CHANGES"
+change-template: "### Changes\n$CHANGES"
