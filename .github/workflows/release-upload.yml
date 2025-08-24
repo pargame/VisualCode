@@ -68,3 +68,29 @@ jobs:
           # Ensure both zip and sha256 are present
           echo "$ASSETS" | grep -q "VisualCode-dist-${TAG}.zip" || (echo "ZIP asset missing" && exit 1)
           echo "$ASSETS" | grep -q "VisualCode-dist-${TAG}.sha256" || (echo "SHA256 asset missing" && exit 1)
+
+      - name: Verify checksum matches (download + compare)
+        run: |
+          set -euo pipefail
+          TAG=${{ github.ref_name }}
+          REPO=${{ github.repository }}
+          ZIP_NAME="VisualCode-dist-${TAG}.zip"
+          SHA_NAME="VisualCode-dist-${TAG}.sha256"
+          mkdir -p artifacts/ci-verify
+          echo "Downloading $ZIP_NAME and $SHA_NAME from release $TAG"
+          gh release download "$TAG" --repo "$REPO" --pattern "$ZIP_NAME" --output artifacts/ci-verify || (echo "Failed to download $ZIP_NAME" && exit 1)
+          gh release download "$TAG" --repo "$REPO" --pattern "$SHA_NAME" --output artifacts/ci-verify || (echo "Failed to download $SHA_NAME" && exit 1)
+          ZIP_PATH="artifacts/ci-verify/$ZIP_NAME"
+          SHA_PATH="artifacts/ci-verify/$SHA_NAME"
+          if [ ! -f "$ZIP_PATH" ] || [ ! -f "$SHA_PATH" ]; then
+            echo "Downloaded files missing:" && ls -la artifacts/ci-verify
+            exit 1
+          fi
+          CALC_SHA=$(sha256sum "$ZIP_PATH" | awk '{print $1}')
+          EXPECTED_SHA=$(cat "$SHA_PATH" | tr -d '\n' | awk '{print $1}')
+          echo "Calculated: $CALC_SHA"
+          echo "Expected:   $EXPECTED_SHA"
+          if [ "$CALC_SHA" != "$EXPECTED_SHA" ]; then
+            echo "Checksum mismatch" && exit 1
+          fi
+          echo "Checksum OK"
