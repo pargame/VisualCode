@@ -16,6 +16,7 @@
     "audit:fix:force": "npm audit fix --force",
     "ci:smoke": "npm ci && npm run build",
     "release:zip": "TAG=${TAG:-$(node -p \"require('./package.json').version\")} && mkdir -p artifacts && zip -r artifacts/VisualCode-dist-${TAG}.zip dist/",
+    "verify:release": "sh ./scripts/verify-release-asset.sh",
     "prepare": "husky install"
   },
   "dependencies": {
