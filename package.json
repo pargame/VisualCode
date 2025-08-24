@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint 'src/**/*.{js,jsx}'",
+    "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
     "format": "prettier --write .",
     "check:format": "prettier --check .",
     "test": "vitest",
@@ -39,8 +39,11 @@
     "node": "^20.0.0"
   },
   "lint-staged": {
-    "src/**/*.{js,jsx}": [
+    "**/*.{js,jsx,ts,tsx}": [
       "eslint --fix",
+      "prettier --write"
+    ],
+    "**/*.{md,json,css,html}": [
       "prettier --write"
     ]
   }
