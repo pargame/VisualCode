@@ -274,3 +274,14 @@ git branch -D gh-pages-backup
 ```
 
 위 작업은 신중히 진행하세요. 일단 백업이 있으니 현재는 별도 조치 없이 `main` 중심 워크플로우를 유지하시면 됩니다.
+
+## Recent CI & deploy fixes (2025-08-24)
+
+- Fixed dynamic publish directory detection in the `deploy-pages` workflow so the build output (`dist/`, `build/`, or `public/`) is selected reliably during deploy.
+- Replaced fragile here-document (`<<'HTML'`) usage with `printf` in workflow steps to avoid shell/YAML parsing errors on GitHub-hosted runners.
+- After these fixes the Deploy to GitHub Pages run completed successfully (run id: `17187236791`, 2025-08-24), and smoke checks passed.
+
+Notes:
+
+- The workflow now prefers `dist/` when present. If you see unexpected placeholder pages, check that `npm run build` produced the expected output and that `package-lock.json` is committed so CI uses `npm ci`.
+- If you want stricter deploy auditing, we can add an automated Pages health check step that fails the workflow and opens an issue when the site does not return HTTP 200 or the expected root div.
