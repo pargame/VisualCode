@@ -1,0 +1,29 @@
+# Ignore dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+public/
+
+# Local env / IDE
+.env
+*.log
+.idea/
+.vscode/
+
+# Caches, coverage
+coverage/
+.cache/
+.vite/
+
+# Audit / large reports
+audit*.json
+audit_total.txt
+build.log
+
+# Git
+.git/
+
+# OS files
+.DS_Store
