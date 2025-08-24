@@ -27,7 +27,7 @@
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^8.0.0",
     "eslint-plugin-react": "^7.0.0",
-    "eslint-plugin-react-hooks": "^4.0.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "husky": "^8.0.0",
     "jsdom": "^26.1.0",
     "lint-staged": "^16.1.5",
