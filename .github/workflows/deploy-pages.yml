@@ -184,11 +184,38 @@ jobs:
             exit 0
           fi
 
+      - name: Validate site contents
+        run: |
+          set -euo pipefail
+          # ensure index.html exists
+          if [ ! -f site/index.html ]; then
+            echo "ERROR: site/index.html not found" && exit 1
+          fi
+          # ensure assets referenced by index.html exist in the site folder
+          ASSETS=$(grep -oE "/${{ github.event.repository.name }}/assets/[^\"'\s>]+" site/index.html | sed 's#^/##' | sort -u || true)
+          if [ -n "$ASSETS" ]; then
+            echo "Validating referenced assets:" && echo "$ASSETS"
+            MISSING=0
+            for a in $ASSETS; do
+              if [ ! -f "site/$a" ]; then
+                echo "MISSING: site/$a" && MISSING=1
+              fi
+            done
+            if [ "$MISSING" -ne 0 ]; then
+              echo "ERROR: referenced assets missing from site/ — aborting deploy" && exit 1
+            fi
+          else
+            echo "No repo-scoped assets referenced in index.html; continuing"
+          fi
+
       - name: Deploy to gh-pages via action
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: site
+          clean: true
+          force: true
+          commit_message: "chore: deploy site via CI (${GITHUB_SHA})"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
