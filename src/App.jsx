@@ -48,19 +48,29 @@ export default function App() {
   // allow creating nodes by clicking anywhere (outside interactive controls)
   useEffect(() => {
     function onAnyClick(e) {
-      // ignore clicks that originate from interactive controls or nodes/editor
+      // ignore clicks that originate from interactive controls, nodes/editor, or the board itself
       const el = e.target;
       if (!boardRef.current) return;
-      if (
-        el.closest &&
-        (el.closest('.editor') ||
-          el.closest('button') ||
-          el.closest('textarea') ||
-          el.closest('input') ||
-          el.closest('.node'))
-      ) {
-        return;
-      }
+      // defensive: some elements may not implement closest
+      const isInteractive = (() => {
+        try {
+          return (
+            (el &&
+              el.closest &&
+              (el.closest('.editor') ||
+                el.closest('button') ||
+                el.closest('textarea') ||
+                el.closest('input') ||
+                el.closest('.node') ||
+                el.closest('.board'))) ||
+            false
+          );
+        } catch (err) {
+          return false;
+        }
+      })();
+
+      if (isInteractive) return;
 
       // compute coordinates relative to the board and clamp to its bounds
       const rect = boardRef.current.getBoundingClientRect();
