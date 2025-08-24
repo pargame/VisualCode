@@ -12,6 +12,9 @@ permissions:
 jobs:
   mirror:
     runs-on: ubuntu-latest
+    concurrency:
+      group: mirror-main
+      cancel-in-progress: false
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
@@ -31,6 +34,18 @@ jobs:
           git checkout -B "$TARGET_BRANCH"
           # Force push to update mirror (this handles history rewrites)
           git push --force origin "$TARGET_BRANCH"
+
+      - name: Create issue on failure
+        if: failure()
+        uses: actions-ecosystem/action-create-issue@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          title: 'Mirror workflow failed: main -> main-backup'
+          body: |
+            The mirror workflow failed for commit `${{ github.sha }}` on branch `main`.
+            Please check the workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            This issue was created automatically.
+          labels: mirror, automated
 
       - name: Cleanup
         run: git checkout -

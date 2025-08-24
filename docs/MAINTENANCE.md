@@ -91,6 +91,24 @@
 
 위 정책은 `.github/workflows/dependabot-automerge.yml`에 구현되어 있습니다.
 
+  ## 브랜치 보호 및 미러 정책(권장)
+
+  - 브랜치 보호(Branch protection) 권장 설정:
+    - `Require pull request reviews before merging` 활성화 (최소 1~2명)
+    - `Require status checks to pass before merging` 활성화 (CI, lint, test)
+    - `Include administrators`는 팀 정책에 따라 활성화
+    - `Restrict who can push to matching branches`로 일반 사용자 직접 푸시 제한
+
+  - `main-backup` 정책:
+    - 자동화에 의해 업데이트되도록 허용(예: GitHub Actions bot). 사람의 직접 푸시를 제한하여 실수로 변경되는 것을 방지
+    - 필요 시 `main-backup`은 읽기 전용(Protected)으로 두고 복원 시 PR을 통한 절차를 사용
+
+  - 미러 정책 권장 플로우:
+    - `main`에 강제 히스토리 재작성(force-push) 등 위험한 작업을 하기 전에는 반드시 `main-backup`으로 상태를 보존
+    - 정기 백업 외에 배포 전 혹은 민감 변경 전 스냅샷을 생성하는 단계(예: `backup/main/YYYYMMDD-HHMM`)를 도입하면 보수성 향상
+
+  위 설정은 GitHub 리포지터리 UI에서 직접 적용하거나, 관리용 스크립트(토큰 필요)를 통해 자동화할 수 있습니다.
+
 ## 릴리즈 및 소유권
 
 - 릴리즈 초안 자동화: `release-drafter`를 사용해 `main`에 머지된 PR을 기반으로 릴리스 초안을 자동 생성합니다. 구성 파일: `.github/release-drafter.yml` 및 워크플로우 `.github/workflows/release-drafter.yml`.

@@ -34,3 +34,15 @@ UserNotification.md
 
 # JetBrains IDEs
 .idea/
+
+# Logs and reports
+.log
+.log.*
+npm-debug.log*
+
+# Lockfiles (keep package-lock but ignore shrinkwrap if present)
+npm-shrinkwrap.json
+
+# OS temp files
+Thumbs.db
+ehthumbs.db
