@@ -38,9 +38,7 @@
 
 ## Recent changes
 
-- 2025-08-24: Husky pre-commit hook script trimmed for v10 compatibility; deprecated sourcing lines removed from `.husky/pre-commit`.
-- 2025-08-24: `lint-staged` upgraded and audit re-run shows no remaining vulnerabilities (see `docs/MAINTENANCE.md` for details).
-- 2025-08-24: Reverted `husky` in `package.json` from `^10.0.0` to `^8.0.0` due to npm registry unavailability for v10 at the time of upgrade. This resolves CI failures with "No matching version found for husky@^10.0.0" (ETARGET). CI will need to run to verify.
+- 2025-08-24: Imported local audit reports for traceability: `audit_report_after.json` and `audit_report_after2.json` (see repository root). These show zero known vulnerabilities after remediation.
 
 Next steps:
 
