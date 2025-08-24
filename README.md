@@ -12,6 +12,9 @@
 [![CI](https://github.com/pargame/VisualCode/actions/workflows/ci.yml/badge.svg)](https://github.com/pargame/VisualCode/actions/workflows/ci.yml)
 [![Dependabot status](https://img.shields.io/badge/dependabot-enabled-brightgreen)](https://github.com/pargame/VisualCode/pulls)
 
+[![Release](https://img.shields.io/github/v/release/pargame/VisualCode?label=latest%20release)](https://github.com/pargame/VisualCode/releases/latest)
+[![Node](https://img.shields.io/badge/node-20.x-brightgreen)](https://nodejs.org/)
+
 Node environment: `.nvmrc` is provided. Use `nvm install && nvm use` to match CI Node 20.
 
 ## 빠른 시작 (로컬)
@@ -138,6 +141,30 @@ fi
 curl -fsS "$URL" | grep -q '<div id="root"' || (echo 'Root div not found' && exit 1)
 echo "Smoke checks passed"
 ```
+
+Quick CI release (tags)
+
+```bash
+# create a lightweight tag and push to trigger CI release-upload workflow
+git tag v0.0.2
+git push origin v0.0.2
+```
+
+### 릴리스 자산 무결성 검증 (로컬/CI)
+
+릴리스 업로드 후 자동 생성된 `.zip` 및 `.sha256` 자산의 무결성을 로컬에서 확인하려면 `gh` CLI가 설정되어 있어야 합니다.
+
+예시:
+
+```bash
+# 환경 변수로 태그를 넘겨 실행
+TAG=v0.0.1 npm run verify:release
+
+# 또는 gh CLI 인증이 되어 있는 상태에서
+TAG=v0.0.1 ./scripts/verify-release-asset.sh
+```
+
+성공하면 "OK: checksum matches"를 출력합니다. 실패 시 스크립트는 non-zero exit code를 반환합니다.
 
 ## 용어 정리: 스모크 체크(smoke check)
 
