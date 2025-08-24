@@ -114,3 +114,8 @@ jobs:
               body,
               labels: ["release", "ci-failure"]
             });
+
+  # Optional Slack notifications can be implemented by adding a step here
+  # that posts to a Slack Incoming Webhook. To enable, add a secret
+  # `SLACK_WEBHOOK` and implement a step that uses it. We keep this out
+  # of the default workflow to avoid configuration issues in CI.
