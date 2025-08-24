@@ -38,8 +38,18 @@
 
 ## Recent changes
 
-- 2025-08-24: Husky pre-commit hook script trimmed for v10 compatibility; deprecated sourcing lines removed from `.husky/pre-commit`.
-- 2025-08-24: `lint-staged` upgraded and audit re-run shows no remaining vulnerabilities (see `docs/MAINTENANCE.md` for details).
+- 2025-08-24: Imported local audit reports for traceability: `audit_report_after.json` and `audit_report_after2.json` (see repository root). These show zero known vulnerabilities after remediation.
+
+Next steps:
+
+- Run CI on the branch to confirm the ETARGET error is resolved.
+- If `/husky` v10 becomes available upstream and we still want to upgrade, create a follow-up PR that:
+  - updates `package.json` to the desired `husky` version,
+  - runs `npm ci` locally and in CI to verify install,
+  - updates `.husky/*` scripts only if required by the new major, and
+  - documents changes in `docs/REPO_STANDARDS.md` and `docs/MAINTENANCE.md`.
+
+- Consider pinning `husky` with a more conservative semver (e.g., `8.x` / `~8.0.0`) if automatic upgrades cause instability.
 
 ---
 
