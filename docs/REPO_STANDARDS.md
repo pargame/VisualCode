@@ -31,6 +31,10 @@
 - Prettier 정의는 `.prettierrc`에 있음
 - 저장소에 `.prettierignore` 및 `.gitattributes` 유지
 
+### 에디터 설정 권장
+
+프로젝트 루트에 `.editorconfig`를 추가하여 에디터 간 기본 인덴트, EOL, 문자셋을 일관화합니다. 이미 `.editorconfig`가 포함되어 있으므로 로컬 에디터에서 해당 설정을 적용해 주세요.
+
 ## 보안
 
 - Dependabot을 활성화하고 보안 PR은 우선 처리
@@ -81,6 +85,10 @@ sha256sum -c VisualCode-dist-v0.0.1-deps-20250824.sha256
 ```
 
 Recommendation: Consumers should verify checksums after downloading, and automation should fail CI if checksum verification fails.
+
+### 도구: 릴리스 무결성 검증 스크립트
+
+로컬 또는 CI에서 릴리스 자산(zip + sha256)을 자동으로 검증하는 `scripts/verify-release-asset.sh` 스크립트를 추가했습니다. 사용 예시는 README에 문서화되어 있으며, `npm run verify:release` 스크립트로도 실행할 수 있습니다.
 
 ### Automated release upload (recommended)
 
