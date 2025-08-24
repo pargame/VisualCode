@@ -55,6 +55,8 @@
 
 - Pages는 정적 호스팅이므로 긴급 롤백은 이전 커밋을 main으로 재배포 (git revert 또는 강제 푸시)로 가능
 
+또한 로컬에서 빌드된 `dist/`를 강제로 `gh-pages`로 푸시하는 스크립트(`scripts/deploy-gh-pages.sh`)를 제공하므로, 긴급 복구가 필요할 때 이를 사용하면 빠르게 최신 정적 파일을 덮어쓸 수 있습니다. 사용 전 반드시 `npm run build`로 빌드하세요.
+
 ## 연락 정보
 
 - 리포지토리 오너: `pargame` (GitHub 프로필 참조)
