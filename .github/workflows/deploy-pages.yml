@@ -132,6 +132,11 @@ jobs:
               # Also create an index-latest variant to help clients fetch a network-first HTML
               # This file will contain a build marker and normalized cache-bust query for assets.
               cp "$PUBLISH_DIR/index.html" site/index-latest.html || true
+              # If a service worker exists in the publish dir, also expose it at the site root so clients can unregister properly
+              if [ -f "$PUBLISH_DIR/sw.js" ]; then
+                echo "Copying service worker to site root: sw.js"
+                cp "$PUBLISH_DIR/sw.js" site/sw.js || true
+              fi
               # inject build meta if not present, and normalize asset query to ?v=latest (best-effort)
               perl -0777 -pe "unless (m{<meta[^>]+name=['\"]build['\"]}i) { s{(<head[^>]*>)}{\$1\n    <meta name=\"build\" content=\"latest\">}i }" -i site/index-latest.html || true
               perl -0777 -pe "s{(\b/assets/[^\"\\s>]+)(\?v=[^\"\\s>]*)}{\$1?v=latest}gi" -i site/index-latest.html || true
@@ -253,17 +258,114 @@ jobs:
           folder: site
           clean: true
           force: true
-          commit_message: "chore: deploy site via CI (${GITHUB_SHA})"
+          commit-message: "chore: deploy site via CI (${GITHUB_SHA})"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pick issue token (prefer DEPLOY_ISSUE_TOKEN when present)
-        id: pick_token
+      - name: Trigger Pages build and poll for completion
+        id: pages_build
         run: |
           set -euo pipefail
-          # Access secrets directly inside the run block to avoid linter complaining about missing context
-          DEPLOY_ISSUE_TOKEN="${{ secrets.DEPLOY_ISSUE_TOKEN }}"
-          GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          API="https://api.github.com/repos/${OWNER}/${REPO}"
+          echo "Triggering Pages build via API"
+          rsp=$(curl -sS -X POST -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github+json" "${API}/pages/builds") || true
+          BUILD_ID=$(echo "$rsp" | python3 -c "import sys,json; j=json.load(sys.stdin); print(j.get('id',''))") || BUILD_ID=""
+          echo "Triggered build id: $BUILD_ID"
+          # Poll latest build status until 'built' or 'failed'
+          for i in {1..24}; do
+            sleep 5
+            s=$(curl -sS -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github+json" "${API}/pages/builds/latest" || true)
+            status=$(echo "$s" | python3 -c "import sys,json; j=json.load(sys.stdin); print(j.get('status','') if isinstance(j,dict) else '')") || status=""
+            echo "Pages build status: $status"
+            if [ "$status" = "built" ]; then
+              echo "pages_built=true" >> $GITHUB_OUTPUT
+              break
+            fi
+            if [ "$status" = "failed" ]; then
+              echo "pages_built=false" >> $GITHUB_OUTPUT
+              echo "Pages build failed" >&2
+              exit 1
+            fi
+          done
+          if [ -z "${status:-}" ] || [ "${status}" != "built" ]; then
+            echo "Pages build did not reach 'built' state in time" >&2
+            echo "pages_built=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Verify index-latest is served (no-cache) and refresh if stale
+        id: verify_latest
+        run: |
+          set -euo pipefail
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          URL="https://${OWNER}.github.io/${REPO}/index-latest.html"
+          echo "Verifying $URL"
+          HTTP=$(curl -fsS -o /dev/null -w "%{http_code}" -H 'Cache-Control: no-cache' "$URL" || true)
+          echo "index-latest returned $HTTP"
+          if [ "$HTTP" = "200" ]; then
+            echo "latest_ok=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "index-latest not yet available (status $HTTP). Attempting forced refresh commit to gh-pages to nudge CDN..."
+
+          # Attempt up to 2 refresh commits that update index-latest.html timestamp
+          for attempt in 1 2; do
+            echo "Refresh attempt $attempt"
+            tmpdir=$(mktemp -d)
+            git clone --depth 1 --branch gh-pages "https://x-access-token:${TOKEN}@github.com/${OWNER}/${REPO}.git" "$tmpdir" || true
+            if [ -f site/index-latest.html ]; then
+              cp -f site/index-latest.html "$tmpdir/index-latest.html"
+            else
+              echo "No site/index-latest.html artifact available to refresh" >&2
+              break
+            fi
+            if [ -f "$tmpdir/index-latest.html" ]; then
+              ts=$(date -u +%Y%m%d%H%M%S)
+              note="<!-- refreshed: $ts -->"
+              if ! grep -qF "$note" "$tmpdir/index-latest.html"; then
+                printf "\n%s\n" "$note" >> "$tmpdir/index-latest.html"
+              fi
+            fi
+            cd "$tmpdir"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config user.name "github-actions[bot]"
+            git add index-latest.html || true
+            if git diff --staged --quiet; then
+              echo "No change to index-latest; skipping commit"
+            else
+              git commit -m "chore: refresh index-latest to force CDN update" || true
+              git push origin HEAD:gh-pages --force || echo "push failed"
+            fi
+            rm -rf "$tmpdir"
+
+            # trigger Pages build again
+            curl -sS -X POST -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${OWNER}/${REPO}/pages/builds" || true
+            # wait briefly before checking
+            sleep 6
+            NEWHTTP=$(curl -fsS -o /dev/null -w "%{http_code}" -H 'Cache-Control: no-cache' "$URL" || true)
+            echo "Post-refresh index-latest status: $NEWHTTP"
+            if [ "$NEWHTTP" = "200" ]; then
+              echo "latest_ok=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          done
+
+          echo "Failed to get index-latest to 200 after refresh attempts" >&2
+          echo "latest_ok=false" >> $GITHUB_OUTPUT
+          exit 1
+
+      - name: Pick issue token (prefer DEPLOY_ISSUE_TOKEN when present)
+        id: pick_token
+        env:
+          DEPLOY_ISSUE_TOKEN: ${{ secrets.DEPLOY_ISSUE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
           if [ -n "$DEPLOY_ISSUE_TOKEN" ]; then
             echo "token=$DEPLOY_ISSUE_TOKEN" >> $GITHUB_OUTPUT
           else

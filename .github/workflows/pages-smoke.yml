@@ -38,15 +38,27 @@ jobs:
           # check for index-latest availability and SW-unregister marker
           LATEST_URL="${URL}index-latest.html"
           echo "Probing index-latest: $LATEST_URL"
-          HTTP_LATEST=$(curl -fsS -o /dev/null -w "%{http_code}" "$LATEST_URL" || true)
+          HTTP_LATEST=$(curl -fsS -o /dev/null -w "%{http_code}" -H 'Cache-Control: no-cache' "$LATEST_URL" || true)
           if [ "$HTTP_LATEST" != "200" ]; then
             echo "WARNING: index-latest returned $HTTP_LATEST";
-            curl -fsS -I "$LATEST_URL" || true
+            curl -fsS -I -H 'Cache-Control: no-cache' "$LATEST_URL" || true
           else
             echo "index-latest reachable (200); validating content"
-            LHTML=$(curl -fsS "$LATEST_URL")
+            LHTML=$(curl -fsS -H 'Cache-Control: no-cache' "$LATEST_URL")
             echo "$LHTML" | grep -q 'meta name="build" content="latest"' || echo "NOTE: build meta not found in index-latest"
             echo "$LHTML" | grep -q 'unregister' && echo "Found unregister script in index-latest" || echo "No unregister script found in index-latest"
+          fi
+
+          # Check for service worker presence at root and repo-scoped path
+          SW_ROOT="https://${OWNER}.github.io/sw.js"
+          SW_REPO="${URL}sw.js"
+          echo "Checking service worker at $SW_ROOT and $SW_REPO"
+          HTTP_SW_ROOT=$(curl -fsS -o /dev/null -w "%{http_code}" -H 'Cache-Control: no-cache' "$SW_ROOT" || true)
+          HTTP_SW_REPO=$(curl -fsS -o /dev/null -w "%{http_code}" -H 'Cache-Control: no-cache' "$SW_REPO" || true)
+          if [ "$HTTP_SW_ROOT" = "200" ] || [ "$HTTP_SW_REPO" = "200" ]; then
+            echo "Service worker is present (root:$HTTP_SW_ROOT repo:$HTTP_SW_REPO)"
+          else
+            echo "Service worker not found at expected locations (root:$HTTP_SW_ROOT repo:$HTTP_SW_REPO)";
           fi
 
           # find asset paths referenced under /<repo>/assets/
