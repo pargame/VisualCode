@@ -1,4 +1,5 @@
-audit_total.txt
+# audit reports (keep if needed locally)
+# audit_total.txt
 ehthumbs.db
 # Node
 node_modules/
@@ -33,8 +34,8 @@ artifacts/VisualCode-dist-*.zip
 artifacts/VisualCode-dist-*.sha256
 
 # Local user notes
-UserFile.md
-UserNotification.md
+# UserFile.md (removed from repo)
+# UserNotification.md (removed from repo)
 
 # Environment files (local secrets)
 .env
