@@ -36,18 +36,7 @@ export default function App() {
     const rect = boardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    // snap to parallelogram lattice with basis e1=(GRID,0), e2=(GRID,GRID)
-    function snapToParallelogram(px, py) {
-      const a = (px - py) / GRID; // coefficient for e1 relative
-      const b = py / GRID; // coefficient for e2
-      const aR = Math.round(a);
-      const bR = Math.round(b);
-      const sx = GRID * (aR + bR);
-      const sy = GRID * bR;
-      return { sx, sy };
-    }
-
-    const { sx: snapX, sy: snapY } = snapToParallelogram(x, y);
+    const { sx: snapX, sy: snapY } = snapToDiagGrid(x, y);
 
     const id = Date.now();
     const newNode = { id, x: snapX, y: snapY, code: '# python\n' };
@@ -89,17 +78,7 @@ export default function App() {
       // clamp to viewport bounds
       x = Math.max(0, Math.min(x, rect.width));
       y = Math.max(0, Math.min(y, rect.height));
-      function snapToParallelogram(px, py) {
-        const a = (px - py) / GRID;
-        const b = py / GRID;
-        const aR = Math.round(a);
-        const bR = Math.round(b);
-        const sx = GRID * (aR + bR);
-        const sy = GRID * bR;
-        return { sx, sy };
-      }
-
-      const { sx: snapX, sy: snapY } = snapToParallelogram(x, y);
+      const { sx: snapX, sy: snapY } = snapToDiagGrid(x, y);
 
       const id = Date.now();
       const newNode = { id, x: snapX, y: snapY, code: '# python\n' };
@@ -138,11 +117,8 @@ export default function App() {
         // scale then snap to parallelogram lattice
         const nx = Math.max(0, Math.min(rect.width, n.x * scaleX));
         const ny = Math.max(0, Math.min(rect.height, n.y * scaleY));
-        const a = (nx - ny) / GRID;
-        const b = ny / GRID;
-        const aR = Math.round(a);
-        const bR = Math.round(b);
-        return { ...n, x: GRID * (aR + bR), y: GRID * bR };
+        const { sx, sy } = snapToDiagGrid(nx, ny);
+        return { ...n, x: sx, y: sy };
       })
     );
   }
@@ -155,13 +131,22 @@ export default function App() {
       s.map((n) => {
         const rx = Math.random() * (rect.width - GRID) + GRID / 2;
         const ry = Math.random() * (rect.height - GRID) + GRID / 2;
-        const a = (rx - ry) / GRID;
-        const b = ry / GRID;
-        const aR = Math.round(a);
-        const bR = Math.round(b);
-        return { ...n, x: GRID * (aR + bR), y: GRID * bR };
+        const { sx, sy } = snapToDiagGrid(rx, ry);
+        return { ...n, x: sx, y: sy };
       })
     );
+  }
+
+  // snap helper for horizontal + top-left-to-bottom-right diagonal lattice
+  function snapToDiagGrid(px, py) {
+    // basis e1 = (GRID, 0), e2 = (GRID, GRID)
+    const a = (px - py) / GRID; // coefficient along e1 relative
+    const b = py / GRID; // coefficient along e2
+    const aR = Math.round(a);
+    const bR = Math.round(b);
+    const sx = GRID * (aR + bR);
+    const sy = GRID * bR;
+    return { sx, sy };
   }
 
   return (
