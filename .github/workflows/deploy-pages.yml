@@ -127,6 +127,17 @@ jobs:
             mkdir -p "site/$REPO_NAME"
             # copy contents preserving structure
             cp -a "$PUBLISH_DIR/." "site/$REPO_NAME/"
+            # Also copy any top-level assets to the site root so both
+            # /assets/... and /<repo>/assets/... paths are served.
+            if [ -d "$PUBLISH_DIR/assets" ]; then
+              mkdir -p site/assets
+              cp -a "$PUBLISH_DIR/assets/." site/assets/ || true
+            fi
+            # Ensure repo-nested assets are also mirrored to site/assets
+            if [ -d "site/$REPO_NAME/assets" ]; then
+              mkdir -p site/assets
+              cp -a "site/$REPO_NAME/assets/." site/assets/ || true
+            fi
             # copy index.html to site root so validation can find it
             if [ -f "$PUBLISH_DIR/index.html" ]; then
               cp "$PUBLISH_DIR/index.html" site/index.html
