@@ -21,8 +21,8 @@ describe('Grid snap', () => {
       y: 0,
     });
 
-    // Click at (50,50) -> snapped to nearest multiple of 24
-    fireEvent.click(board, { clientX: 50, clientY: 50 });
+    // Click at (48,48) which is exactly 24*2 so placement is allowed
+    fireEvent.click(board, { clientX: 48, clientY: 48 });
 
     const node = container.querySelector('.node');
     expect(node).toBeTruthy();

@@ -22,8 +22,8 @@ describe('Delete all nodes', () => {
 
     board.getBoundingClientRect = () => ({ left: 0, top: 0, width: 480, height: 480 });
 
-    // create a node
-    fireEvent.click(board, { clientX: 50, clientY: 50 });
+    // create a node on a grid intersection (48,48)
+    fireEvent.click(board, { clientX: 48, clientY: 48 });
     let node = container.querySelector('.node');
     expect(node).toBeTruthy();
 

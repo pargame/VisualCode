@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-
-const GRID = 24;
+import { GRID, SNAP_TOLERANCE } from './constants';
 const STORAGE_KEY = 'visualcode_nodes_v1';
 
 function loadNodes() {
@@ -57,6 +56,9 @@ export default function App() {
     const scrollTop = boardRef.current.scrollTop || 0;
     const x = e.clientX - rect.left + scrollLeft;
     const y = e.clientY - rect.top + scrollTop;
+    // only allow placement when click is (practically) on a grid intersection
+    if (!isAtGridIntersection(x, y)) return;
+
     const { sx: snapX, sy: snapY } = snapToDiagGrid(x, y);
 
     const id = Date.now();
@@ -72,6 +74,11 @@ export default function App() {
     const scrollTop = boardRef.current.scrollTop || 0;
     const x = e.clientX - rect.left + scrollLeft;
     const y = e.clientY - rect.top + scrollTop;
+    // only show hover preview when pointer is on an intersection
+    if (!isAtGridIntersection(x, y)) {
+      setHoverPos(null);
+      return;
+    }
     const { sx, sy } = snapToDiagGrid(x, y);
     setHoverPos({ x: sx, y: sy });
   }
@@ -116,6 +123,10 @@ export default function App() {
       // clamp to viewport bounds
       x = Math.max(0, Math.min(x, rect.width + scrollLeft));
       y = Math.max(0, Math.min(y, rect.height + scrollTop));
+
+      // only allow placement when the click is on a grid intersection
+      if (!isAtGridIntersection(x, y)) return;
+
       const { sx: snapX, sy: snapY } = snapToDiagGrid(x, y);
 
       const id = Date.now();
@@ -181,6 +192,13 @@ export default function App() {
     const gx = Math.round(px / GRID);
     const gy = Math.round(py / GRID);
     return { sx: GRID * gx, sy: GRID * gy };
+  }
+
+  // Return true when (px,py) is within SNAP_TOLERANCE of a grid intersection
+  function isAtGridIntersection(px, py) {
+    const gx = Math.round(px / GRID) * GRID;
+    const gy = Math.round(py / GRID) * GRID;
+    return Math.abs(px - gx) <= SNAP_TOLERANCE && Math.abs(py - gy) <= SNAP_TOLERANCE;
   }
 
   return (

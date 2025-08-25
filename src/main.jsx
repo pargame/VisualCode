@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles.css';
+import { GRID } from './constants';
 
 // Ensure any previously-registered service workers are unregistered and caches cleared
 // This prevents stale SW from serving old HTML/assets after a deploy
@@ -52,6 +53,13 @@ function ensureRoot() {
 const rootEl = ensureRoot();
 const root = createRoot(rootEl);
 root.render(<App />);
+
+// Expose runtime CSS variables from JS constants so styles and logic stay in sync
+try {
+  document.documentElement.style.setProperty('--grid-size', String(GRID));
+} catch (e) {
+  // ignore in non-browser environments
+}
 
 // Development-only: watch for the root element being removed/replaced and
 // re-insert + re-render once. This helps recover when the document is briefly

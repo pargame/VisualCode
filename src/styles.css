@@ -30,8 +30,12 @@ body::before {
     - second layer: 45deg diagonal lines spaced approximately GRID * sqrt(2)
   */
   background-image:
-    repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(45deg, var(--grid) 0 1px, transparent 1px 34px);
+    repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px var(--grid-size)),
+    repeating-linear-gradient(
+      45deg,
+      var(--grid) 0 1px,
+      transparent 1px calc(var(--grid-size) * 1.414)
+    );
   pointer-events: none;
   z-index: 0;
 }
@@ -78,8 +82,12 @@ a {
   inset: 0;
   background-color: var(--bg);
   background-image:
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.02) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.02) 0 1px, transparent 1px 34px);
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.02) 0 1px, transparent 1px var(--grid-size)),
+    repeating-linear-gradient(
+      45deg,
+      rgba(0, 0, 0, 0.02) 0 1px,
+      transparent 1px calc(var(--grid-size) * 1.414)
+    );
   border-radius: 0;
   overflow: auto;
   border: 0;

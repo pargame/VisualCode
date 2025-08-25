@@ -1,3 +1,7 @@
 {
-    "github.copilot.chat.reviewSelection.instructions": []
+    "github.copilot.chat.reviewSelection.instructions": [
+        {
+            "file": ".copilot-review-instructions.md"
+        }
+    ]
 }
