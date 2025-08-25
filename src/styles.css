@@ -109,6 +109,11 @@ a {
   justify-content: center;
   cursor: pointer;
 }
+.node.preview {
+  pointer-events: none;
+  opacity: 0.6;
+  transform: translate(-50%, -50%) scale(0.95);
+}
 .node-dot {
   width: 10px;
   height: 10px;

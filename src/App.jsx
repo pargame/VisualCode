@@ -19,6 +19,7 @@ export default function App() {
   const [nodes, setNodes] = useState(() => loadNodes());
   const [selectedId, setSelectedId] = useState(null);
   const [codeDraft, setCodeDraft] = useState('');
+  const [hoverPos, setHoverPos] = useState(null);
   const boardRef = useRef(null);
 
   useEffect(() => {
@@ -45,6 +46,21 @@ export default function App() {
     const newNode = { id, x: snapX, y: snapY, code: '# python\n' };
     setNodes((s) => [...s, newNode]);
     setSelectedId(id);
+  }
+
+  function handleBoardMouseMove(e) {
+    if (!boardRef.current) return;
+    const rect = boardRef.current.getBoundingClientRect();
+    const scrollLeft = boardRef.current.scrollLeft || 0;
+    const scrollTop = boardRef.current.scrollTop || 0;
+    const x = e.clientX - rect.left + scrollLeft;
+    const y = e.clientY - rect.top + scrollTop;
+    const { sx, sy } = snapToDiagGrid(x, y);
+    setHoverPos({ x: sx, y: sy });
+  }
+
+  function handleBoardMouseLeave() {
+    setHoverPos(null);
   }
 
   // allow creating nodes by clicking anywhere (outside interactive controls)
@@ -164,7 +180,22 @@ export default function App() {
       </header>
 
       <div className="board-area">
-        <div ref={boardRef} className="board" onClick={handleBoardClick}>
+        <div
+          ref={boardRef}
+          className="board"
+          onClick={handleBoardClick}
+          onMouseMove={handleBoardMouseMove}
+          onMouseLeave={handleBoardMouseLeave}
+        >
+          {hoverPos ? (
+            <div
+              key="hover-preview"
+              className="node preview"
+              style={{ left: hoverPos.x + 'px', top: hoverPos.y + 'px' }}
+            >
+              <span className="node-dot" />
+            </div>
+          ) : null}
           {nodes.map((n) => (
             <div
               key={n.id}
