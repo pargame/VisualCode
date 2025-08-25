@@ -376,7 +376,7 @@ jobs:
         if: failure()
         uses: actions-ecosystem/action-create-issue@v1
         with:
-          github_token: ${{ steps.pick_token.outputs.token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           title: 'Deploy to Pages failed for commit ${{ github.sha }}'
           body: |
             The deploy job failed for commit `${{ github.sha }}` on branch `${{ github.ref_name }}`.
