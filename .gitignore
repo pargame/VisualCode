@@ -10,8 +10,9 @@ public/
 !public/index.html
 
 # IDEs
-.vscode/
 .idea/
+
+# NOTE: .vscode is intentionally allowed to be tracked for workspace settings
 
 # System files
 .DS_Store
