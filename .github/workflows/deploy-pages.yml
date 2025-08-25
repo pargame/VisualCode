@@ -52,6 +52,35 @@ jobs:
             npm run build
           fi
 
+      - name: Build debug info (diagnostics)
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "--- DIAGNOSTIC: environment ---"
+          node -v || true
+          npm -v || true
+          npx --version || true
+          echo "--- DIAGNOSTIC: project files ---"
+          ls -la || true
+          echo "--- DIAGNOSTIC: check common build output dirs ---"
+          for d in build dist public; do
+            if [ -d "$d" ]; then
+              echo "Found $d:"; du -sh "$d" || true; find "$d" -maxdepth 2 -type f -print | sed -n '1,50p' || true
+            else
+              echo "No $d directory"
+            fi
+          done
+          echo "--- DIAGNOSTIC: show index.html head if present ---"
+          if [ -f dist/index.html ]; then
+            sed -n '1,60p' dist/index.html || true
+          elif [ -f build/index.html ]; then
+            sed -n '1,60p' build/index.html || true
+          elif [ -f public/index.html ]; then
+            sed -n '1,60p' public/index.html || true
+          else
+            echo "No index.html found in build outputs"
+          fi
+
       - name: Auto format & lint-fix for PRs (commits back when allowed)
         if: ${{ github.event_name == 'pull_request' }}
         uses: actions/checkout@v4
@@ -200,6 +229,12 @@ jobs:
           echo "Downloaded artifact contents:";
           ls -la site || true;
           du -sh site || true
+          echo "--- show site/index.html head (if present) ---"
+          if [ -f site/index.html ]; then
+            sed -n '1,80p' site/index.html || true
+          else
+            echo "site/index.html not present"
+          fi
 
       - name: Prepare deploy site and decide if deploy is necessary
         id: deploy_prepare

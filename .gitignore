@@ -1,6 +1,3 @@
-# audit reports (keep if needed locally)
-# audit_total.txt
-ehthumbs.db
 # Node
 node_modules/
 npm-debug.log*
@@ -12,44 +9,36 @@ build/
 public/
 !public/index.html
 
-# VSCode
+# IDEs
 .vscode/
+.idea/
 
-# macOS
+# System files
 .DS_Store
+Thumbs.db
+ehthumbs.db
 
-# Caches and coverage
+# Cache / tooling
 .cache/
 .vite/
 coverage/
 
-# Local audit/build artifacts (generated during maintenance)
-
-audit_total.txt
+# Local artifacts and logs generated during maintenance/CI (ignored)
+/tmp/VisualCode-dist-*.zip
+artifacts/
+*.log
 build.log
 
-# Temporary release artifacts created during maintenance or CI
-/tmp/VisualCode-dist-*.zip
-artifacts/VisualCode-dist-*.zip
-artifacts/VisualCode-dist-*.sha256
+# Audit reports and temporary notes (optional local files)
+audit_report.json
+audit_report_after.json
+audit_report_after2.json
+UserFile.md
 
-# Local user notes
-# UserFile.md (removed from repo)
-# UserNotification.md (removed from repo)
-
-# Environment files (local secrets)
+# Environment files (secrets)
 .env
 .env.*
 
-# JetBrains IDEs
-.idea/
-
-# Logs and reports
-*.log
-
-# Lockfiles (keep package-lock but ignore shrinkwrap if present)
+# Lockfiles
 npm-shrinkwrap.json
-
-# OS temp files
-Thumbs.db
-ehthumbs.db
+# JetBrains IDEs

@@ -20,16 +20,18 @@ body {
   background: var(--bg);
 }
 /* subtle grid background */
+/* parallelogram grid: horizontal lines + diagonal (45deg) lines */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background-image:
     linear-gradient(0deg, var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    linear-gradient(45deg, var(--grid) 1px, transparent 1px);
+  /* horizontal repeat every GRID, diagonal spacing chosen to align with GRID spacing */
   background-size:
     24px 24px,
-    24px 24px;
+    34px 34px;
   pointer-events: none;
   z-index: 0;
 }
@@ -77,8 +79,10 @@ a {
   background-color: var(--bg);
   background-image:
     linear-gradient(0deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
-  background-size: 24px 24px;
+    linear-gradient(45deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+  background-size:
+    24px 24px,
+    34px 34px;
   border-radius: 0;
   overflow: auto;
   border: 0;

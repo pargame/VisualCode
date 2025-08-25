@@ -1,6 +1,8 @@
 # VisualCode
 
-이 저장소 이름은 `VisualCode`일 뿐이며, 특정 제품을 지칭하지 않습니다.
+Last updated: 2025-08-25
+
+이 저장소의 이름은 `VisualCode`일 뿐이며, 특정 제품을 지칭하지 않습니다.
 실제 목적은 React + GitHub Pages를 사용해 웹 페이지를 만들기 위한 기반(boilerplate)을 제공하는 것입니다. 이 리포지터리는 Vite 기반 개발 환경, GitHub Actions를 이용한 빌드·배포 파이프라인, 그리고 보안·운영 관련 문서화를 포함합니다.
 
 ## 한눈에 보기

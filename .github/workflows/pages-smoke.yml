@@ -24,7 +24,8 @@ jobs:
           HTTP=$(curl -fsS -o /dev/null -w "%{http_code}" "$URL" || true)
           if [ "$HTTP" != "200" ]; then
             echo "ERROR: site root returned HTTP $HTTP"
-            curl -fsS -I "$URL" || true
+            echo "---- VERBOSE CURL OUTPUT ----"
+            curl -v "$URL" || true
             exit 1
           fi
 
@@ -33,7 +34,7 @@ jobs:
 
           # basic assertion: root div exists
           echo "Checking for <div id=\"root\">..."
-          echo "$HTML" | grep -q '<div id="root"' || (echo "ERROR: root div not found" && exit 1)
+          echo "$HTML" | grep -q '<div id="root"' || (echo "ERROR: root div not found" && echo "HTML head:" && echo "$HTML" | sed -n '1,120p' && exit 1)
 
           # check for index-latest availability and SW-unregister marker
           LATEST_URL="${URL}index-latest.html"

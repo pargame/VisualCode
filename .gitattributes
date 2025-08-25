@@ -1,31 +1,28 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
-# Force LF for known text files
+# Force LF for source and docs
 *.js text eol=lf
 *.jsx text eol=lf
 *.css text eol=lf
 *.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
 
-# Mark common binary files
+# Binary assets
 *.png binary
 *.jpg binary
 *.jpeg binary
 *.gif binary
-*.pdf binary
-
-# Ensure lockfiles and config files keep LF
-package-lock.json text eol=lf
-*.yml text eol=lf
-*.yaml text eol=lf
-*.json text eol=lf
-
-# Explicitly mark common image and vector formats as binary
 *.svg binary
 *.webp binary
 *.ico binary
+*.pdf binary
 
-# Ensure artifacts are not treated as text
-artifacts/* binary
+# Artifacts and release bundles
+artifacts/** binary
 *.zip binary
+
+# Checksums kept as text
 *.sha256 text eol=lf

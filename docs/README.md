@@ -4,18 +4,11 @@
 
 ## 빠른 목차
 
-- `README.md` — (이 파일) 문서 진입점: TOC · 퀵스타트 · 기초 가이드
-- `ENVIRONMENT.md` — 로컬/CI 환경 설정 및 권장 도구
-- `DEPLOYMENT.md` — GitHub Pages 배포 워크플로우, 토큰/권한 가이드, 체크섬 보호
-- `CI_SMOKE.md` — 배포 후 간단한 스모크 체크(HTTP 200, root div 등)
-- `ARCHITECTURE.md` — 아키텍처 개요
-- `MAINTENANCE.md` — 정기 점검과 운영 절차
-- `SECURITY.md` — 보안/취약점 처리 정책
-- `SOURCES.md` — 파일 맵과 핵심 위치
-
-Archived notes and time-stamped notifications have been moved to `docs/archive/` to keep the top-level docs focused on active guidance.
-
 ## 퀵스타트 (개발자 관점)
+
+Last updated: 2025-08-25
+
+이 폴더는 프로젝트 운영 및 개발 관련 문서를 포함합니다.
 
 1. 레포 클론 및 의존 설치
 
