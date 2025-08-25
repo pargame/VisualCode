@@ -71,11 +71,12 @@ export default function App() {
 
       if (isInteractive) return;
 
-      // compute coordinates relative to the board and clamp to its bounds
-      const rect = boardRef.current.getBoundingClientRect();
+      // compute coordinates relative to the viewport so clicks anywhere map to the board
+      // (the board is fixed to inset:0 so viewport coords match board coords)
+      const rect = { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
       let x = e.clientX - rect.left;
       let y = e.clientY - rect.top;
-      // clamp so clicks outside still produce a visible node along the board edges
+      // clamp to viewport bounds
       x = Math.max(0, Math.min(x, rect.width));
       y = Math.max(0, Math.min(y, rect.height));
       const snapX = Math.round(x / GRID) * GRID;
