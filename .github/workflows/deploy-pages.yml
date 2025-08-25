@@ -133,8 +133,8 @@ jobs:
               # This file will contain a build marker and normalized cache-bust query for assets.
               cp "$PUBLISH_DIR/index.html" site/index-latest.html || true
               # inject build meta if not present, and normalize asset query to ?v=latest (best-effort)
-              perl -0777 -pe 'unless (m{<meta[^>]+name=["']build["']}i) { s{(<head[^>]*>)}{$1\n    <meta name="build" content="latest">}i }' -i site/index-latest.html || true
-              perl -0777 -pe 's{(\b/assets/[^"'"\s>]+)(\?v=[^"\s>]*)}{$1?v=latest}gi' -i site/index-latest.html || true
+              perl -0777 -pe "unless (m{<meta[^>]+name=['\"]build['\"]}i) { s{(<head[^>]*>)}{\$1\n    <meta name=\"build\" content=\"latest\">}i }" -i site/index-latest.html || true
+              perl -0777 -pe "s{(\b/assets/[^\"\\s>]+)(\?v=[^\"\\s>]*)}{\$1?v=latest}gi" -i site/index-latest.html || true
             fi
           else
             echo "Warning: publish dir '$PUBLISH_DIR' not found; creating placeholder site/$REPO_NAME"
