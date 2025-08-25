@@ -223,12 +223,14 @@ jobs:
               SHORT_PATH="${a#*/}"          # path without leading repo/ prefix
               CAND1="site/$a"               # site/VisualCode/assets/...
               CAND2="site/$SHORT_PATH"      # site/assets/...
-              echo "Checking: $CAND1 or $CAND2"
-              if [ -f "$CAND1" ] || [ -f "$CAND2" ]; then
+              GLOB1=(site/${a}*)              # wildcard match (handles truncated suffix)
+              GLOB2=(site/${SHORT_PATH}*)     # wildcard without repo prefix
+              echo "Checking: $CAND1 or $CAND2 or globs ${GLOB1[*]} ${GLOB2[*]}"
+              if [ -f "$CAND1" ] || [ -f "$CAND2" ] || compgen -G "${GLOB1[*]}" >/dev/null || compgen -G "${GLOB2[*]}" >/dev/null; then
                 echo "FOUND: $a"
                 continue
               else
-                echo "MISSING: $a (looked at $CAND1 and $CAND2)" && MISSING=1
+                echo "MISSING: $a (looked at $CAND1, $CAND2, and globs)" && MISSING=1
               fi
             done
             if [ "$MISSING" -ne 0 ]; then
