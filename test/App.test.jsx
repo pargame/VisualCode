@@ -5,7 +5,8 @@ import App from '../src/App';
 
 describe('App', () => {
   it('renders title', () => {
-    const { getByText } = render(<App />);
-    expect(getByText(/pargame \/ VisualCode/i)).toBeTruthy();
+    const { getByRole } = render(<App />);
+    // Target the main heading (H1) to avoid matching incidental text like storage keys
+    expect(getByRole('heading', { level: 1, name: /VisualCode/i })).toBeTruthy();
   });
 });
