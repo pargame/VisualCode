@@ -94,3 +94,85 @@
 ---
 
 로컬에 기존 클론이 있을 경우 재클론 또는 브랜치 리셋(예: `git fetch --all` + `git reset --hard origin/main`)이 필요합니다.
+
+## 통합 터미널(Exit code 127) 진단 및 대응
+
+증상: VS Code 통합 터미널을 열 때 `/bin/zsh` 프로세스가 즉시 종료되며 "terminated with exit code 127" 메시지가 출력됩니다. 이 코드는 일반적으로 "command not found"를 의미하며, 셸 초기화 파일에서 존재하지 않는 명령을 호출하거나 PATH를 덮어써 필요한 바이너리가 보이지 않을 때 발생합니다.
+
+재현 및 진단 명령 (로컬에서 실행):
+
+```bash
+# 기본 쉘 및 zsh 경로 확인
+echo "$SHELL"
+which zsh
+/bin/zsh --version
+
+# interactive / login+interactive / non-interactive 모드 테스트
+/bin/zsh -i -c 'echo interactive_ok'
+/bin/zsh -l -i -c 'echo login_interactive_ok'
+/bin/zsh -c 'echo non_interactive_ok'
+```
+
+원인 분석 체크리스트
+
+- `~/.zshrc`, `~/.zprofile`, `~/.zshenv` 등 초기화 파일에서 절대경로가 없는 외부 명령을 직접 호출(예: some_tool --flag)
+- 초기화 파일이 PATH를 덮어써 `/usr/bin` 같은 표준 경로를 제거
+- 초기화 파일에 민감 데이터(하드코딩 API 키 등)가 포함되어 있고 출력/처리시 에러 발생
+
+안전한 패치(권장 패턴)
+
+- non-interactive 셸에서 초기화 로직을 건너뛰도록 방어문을 추가합니다(통합 터미널 또는 스크립트가 zsh를 호출할 때 예기치 않은 종료를 방지):
+
+```bash
+# ~/.zshrc 상단에 추가
+[[ $- != *i* ]] && return
+```
+
+- 외부 명령 호출는 `command -v` 또는 `if [ -x "/path/to/bin" ]`로 감싸 안전하게 처리합니다:
+
+```bash
+if command -v rbenv >/dev/null 2>&1; then
+  eval "$(rbenv init - zsh)"
+fi
+```
+
+- 비밀(시크릿) 값은 dotfile에 직접 저장하지 말고 안전한 위치(예: `$XDG_CONFIG_HOME/gemini/keys` 또는 환경변수)에서 로드합니다. 예시: `~/.config/gemini/keys` (각 줄에 하나의 키), 파일 권한 `chmod 600` 권장.
+
+제가 적용한 안전 패치(사례)
+
+- 작업: `~/.zshrc`를 백업한 뒤 안전화된 버전으로 교체했습니다. 백업 파일 예: `~/.zshrc.prepatch.1756102129`.
+- 변경 요지:
+  - non-interactive 셸에서 초기화 스크립트를 건너뛰도록 `[[ $- != *i* ]] && return` 추가
+  - 하드코딩된 Gemini API 키 제거 및 키 파일(`~/.config/gemini/keys`) 또는 환경변수로 대체
+  - `brew`, `rbenv` 등의 툴 로딩을 존재 확인(guard)으로 감쌈
+- 검증: `/bin/zsh -i`, `/bin/zsh -l -i`, `/bin/zsh -c` 를 사용한 테스트에서 모두 정상 동작 확인
+
+운영 체크리스트 (터미널 관련)
+
+1. 문제가 보고되면 우선 VS Code에서 통합 터미널을 새로 열어 확인
+2. 로컬에서 위의 재현 명령을 실행해 non-interactive vs interactive 차이를 확인
+3. 초기화 파일을 열어 외부 명령 호출/경로 덮어쓰기 여부 확인
+4. 임시로 `[[ $- != *i* ]] && return`을 추가해 non-interactive 환경에서 안전하게 빠져나오도록 조치
+5. 변경 시 백업을 반드시 남기고(예: `~/.zshrc.prepatch.<ts>`), 테스트 후 롤백 가능하게 함
+
+## 아카이브 및 클린업 (이번 작업 요약)
+
+- 이번 세션에서 로컬/레포지토리 정리 작업을 수행했습니다:
+  - `audit_report.json`, `audit_report_after.json`, `audit_report_after2.json` 파일들을 `archive/`로 이동 후, 깃에서 제거했습니다.
+  - 관련 커밋:
+    - `0d6343f` — archive: moved audit reports into `archive/` and added `docs/archive/NOTIFICATIONS-2025-08-24.md`
+    - `8b2a6ee` — chore: archive audit reports, artifacts and UserFile (workspace commits)
+    - `edd703b` — chore: remove archived audit reports and artifacts from repo (files removed from git)
+  - 결과: `archive/`에 더 이상 추적되는 감사 파일이 없고(`git ls-files | grep '^archive/'` 결과 없음), `archive/artifacts/`는 현재 빈 디렉토리(로컬 파일시스템상)입니다.
+
+운영 지침
+
+- 아카이브 전에는 반드시 원본을 GitHub Release 또는 안전한 외부 저장소로 이전한 뒤 이동/삭제 권고
+- 깃에서 완전 제거(히스토리 재작성)를 원하면 `git filter-repo` 또는 BFG 사용을 검토하되 팀원에게 사전 공지 필요
+
+## 변경 기록(추가)
+
+| 날짜       |  변경자 | 파일                 | 요약                                                         | PR/커밋 |
+| ---------- | ------: | -------------------- | ------------------------------------------------------------ | ------- |
+| 2025-08-25 | pargame | `~/.zshrc` (dotfile) | non-interactive guard 추가, gemini 키를 파일/환경변수로 이동 | ad-hoc  |
+| 2025-08-25 | pargame | `archive/*`          | 감사 리포트 파일 깃에서 제거(아카이브 후 삭제)               | edd703b |

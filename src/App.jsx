@@ -107,8 +107,10 @@ export default function App() {
   return (
     <div className="app-root">
       <header className="app-header">
-        <h1>pargame / VisualCode — Nodes</h1>
-        <p>Click any grid cell to create a node. Select a node to edit its Python code.</p>
+        <h1 style={{ margin: 0, fontSize: '14px' }}>VisualCode — Nodes</h1>
+        <p style={{ margin: '4px 0 0', fontSize: '12px' }}>
+          Click anywhere to create nodes. Select to edit.
+        </p>
       </header>
 
       <div className="board-area">
