@@ -86,4 +86,9 @@ function probeAndReplaceIndexLatest(intervalMs = 10000, attempts = 6) {
 }
 
 // Start probes after a short delay to give initial unload/unregister a chance
-setTimeout(() => probeAndReplaceIndexLatest(10000, 12), 2000);
+// Only run the probe replacement in production builds; during local development
+// the probe can accidentally replace the document (blank UI) when a fetch
+// returns an unexpected payload.
+if (import.meta.env && import.meta.env.PROD) {
+  setTimeout(() => probeAndReplaceIndexLatest(10000, 12), 2000);
+}
