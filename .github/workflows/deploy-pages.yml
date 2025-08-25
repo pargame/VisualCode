@@ -137,6 +137,10 @@ jobs:
               if [ -f "$PUBLISH_DIR/sw.js" ]; then
                 echo "Copying service worker to site root: sw.js"
                 cp "$PUBLISH_DIR/sw.js" site/sw.js || true
+              else
+                echo "No service worker in publish dir; creating a small no-op site/sw.js to allow clients to unregister stale workers"
+                mkdir -p site
+                printf "%s\n" "// Minimal no-op service worker stub installed by CI when no sw.js exists in the build output." "// This file ensures a /sw.js response so client-side unregister() logic can run and clear old caches." "self.addEventListener('install', function(e){ self.skipWaiting(); });" "self.addEventListener('activate', function(e){ self.clients.claim(); });" "// Intentionally no fetch handlers - keep this worker lightweight and inert." > site/sw.js || true
               fi
               # inject build meta if not present, and normalize asset query to ?v=latest (best-effort)
               perl -0777 -pe "unless (m{<meta[^>]+name=['\"]build['\"]}i) { s{(<head[^>]*>)}{\$1\n    <meta name=\"build\" content=\"latest\">}i }" -i site/index-latest.html || true
