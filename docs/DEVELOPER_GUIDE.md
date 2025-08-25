@@ -35,6 +35,44 @@ nvm use
 
 gh CLI 사용 예시 (더 상세)
 
+````bash
+ # Developer Guide
+
+이 문서는 개발자 온보딩과 로컬 개발에 필요한 기본 지침과, 실제로 로컬에서 직접 실행하면서 반드시 확인하고 수정해야 할 항목들을 정리합니다.
+
+핵심 명령
+
+- 의존성 설치: `npm install`
+- 재현 가능한 설치(CI와 동일): `npm ci`
+- 개발 서버: `npm run dev`
+- 프로덕션 빌드: `npm run build`
+- 포맷: `npm run format`
+- 린트: `npm run lint`
+- 테스트: `npm run test -- --run`
+- 취약점 조회: `npm run audit`
+- 취약점 자동 수리(로컬 검토): `npm run audit:fix` 또는 `npm run audit:fix:force`
+- 간단 CI 재현(설치+빌드): `npm run ci:smoke`
+- 빌드 산출물(`dist/`)을 로컬에서 빠르게 미리보기하려면: `npm run preview:dist` (기본 포트: 5000)
+
+권장 환경
+
+- 권장 Node 버전: 20.x (프로젝트는 Vite 최신 버전 호환을 위해 Node 20을 권장합니다)
+- nvm 사용을 권장: 루트에 `.nvmrc`가 포함되어 있습니다. 설치 후 `nvm use`로 권장 버전을 적용하세요.
+
+nvm 사용 예시 (macOS + Homebrew)
+
+```bash
+brew install nvm
+mkdir -p ~/.nvm
+echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.zshrc
+echo 'source $(brew --prefix nvm)/nvm.sh' >> ~/.zshrc
+source ~/.zshrc
+nvm install
+nvm use
+````
+
+gh CLI 사용 예시 (더 상세)
+
 ```bash
 # 최근 실행 10개 보기
 gh run list --repo <owner>/<repo> --limit 10
@@ -49,101 +87,75 @@ gh run view <run-id> --repo <owner>/<repo> --web
 gh run download <run-id> --repo <owner>/<repo> --name preview-dist
 ```
 
-## 릴리스(로컬) 빠른 가이드
+## 로컬에서 "직접 실행하면서" 반드시 확인·수정해야 할 항목들 (실행 가이드)
 
-CI 자동 릴리스를 우선 권장합니다. 로컬에서 수동 릴리스를 할 경우 아래 절차를 따르세요.
+아래 항목들은 설정 파일로 이미 정의되어 있더라도, 실제로 실행하면서 직접 점검하고 필요하면 수정해야 할 사항들입니다. 새로 개발 환경을 맞추거나 배포 파이프라인을 디버그할 때 먼저 이 목록을 따라가세요.
 
-1. 빌드 및 아티팩트 생성
+- Node / npm 버전
+  - `.nvmrc`의 버전을 적용하세요: `nvm install && nvm use`.
+  - CI와 동일한 Node 버전을 사용하면 빌드 오류가 줄어듭니다.
 
-```bash
-npm ci
-npm run build
-TAG=v0.0.1 npm run release:zip
-sha256sum artifacts/VisualCode-dist-v0.0.1.zip > artifacts/VisualCode-dist-v0.0.1.sha256
-```
+- 의존성 설치(재현성)
+  - CI 환경과 동일하게 `npm ci` 사용을 권장합니다. 로컬에서 새 패키지를 추가하면 `npm install`로 lockfile을 갱신한 뒤 커밋하세요.
 
-2. 릴리스 업로드
+- Husky 훅 설치 및 확인
+  - 설치 후: `npm run prepare` (Husky 훅 설치).
+  - 훅 작동 확인: `git add . && git commit -m "test hooks"` (테스트 후 `git reset --soft HEAD~1`로 롤백).
 
-```bash
-gh release create v0.0.1 --repo pargame/VisualCode --title "v0.0.1" --notes "Release from local" --attach artifacts/VisualCode-dist-v0.0.1.zip --attach artifacts/VisualCode-dist-v0.0.1.sha256
-```
+- 환경 변수(.env)
+  - 민감 정보는 로컬 `.env`에 보관하고 저장소에는 `.env.example`만 둡니다.
+  - Actions에서 필요한 시크릿(예: `GH_TOKEN`, `GH_PAGES_TOKEN`)은 GitHub 리포지토리 설정에 등록하세요.
 
-3. 업로드 확인
+- 빌드 출력 경로와 워크플로우 일치 여부
+  - Vite 기본 출력은 `dist/`입니다. 워크플로우의 `publish_dir` 또는 배포 액션의 `publish_dir`이 `dist`와 일치하는지 확인하세요.
 
-```bash
-gh release view v0.0.1 --repo pargame/VisualCode --json assets -q '.assets[].name'
-```
+- `package.json` 주요 항목 점검
+  - `scripts`에 `dev`, `build`, `preview:dist`, `ci:smoke` 등 필요한 스크립트가 있는지 확인.
+  - GitHub Pages 경로 이슈가 있는 경우 `homepage` 필드(예: `/repo-name/`)를 설정해 보세요.
 
-## nvm 및 Node 버전
+- 메모리/타임아웃 문제(빌드 실패 관련)
+  - CI에서 OOM이 발생하면 Node 버전 변경, 의존성 줄이기, 또는 빌드 옵션(예: minify 비활성화)으로 테스트하세요.
+  - Actions의 `runs-on`을 더 큰 인스턴스로 바꿔 확인해보는 방법도 있습니다.
 
-루트에 `.nvmrc`가 포함되어 있으며 권장 Node 버전은 20입니다. 새 개발자는 `nvm install && nvm use`로 환경을 맞춰주세요.
+- 로컬 미리보기(배포 전 스모크)
+  - 빌드 후: `npm run preview:dist` 또는 `npx serve dist`로 확인.
+  - SPA 라우팅(history API) 사용 시 404 처리 정책을 점검하세요.
 
-테스트 추가
+- 테스트 및 스모크
+  - 단위/통합: `npm run test -- --run` (Vitest)
+  - 간단 CI 재현: `npm run ci:smoke`
 
-- 테스트 파일 위치: `test/*.test.jsx` 또는 `test/*.spec.jsx`
-- 테스트는 `vitest`와 `@testing-library/react`를 사용합니다. DOM 테스트는 jsdom 환경을 사용합니다.
+- GitHub Actions 권한 및 토큰
+  - 자동 푸시나 페이지 배포 실패 시 `GITHUB_TOKEN` 또는 개인 토큰의 권한(`contents:write`, `pages:write`)을 확인하세요.
 
-커밋 훅
+- 로컬 디버깅 팁
+  - 빌드 로그 저장: `npm run build 2>&1 | tee build.log`
+  - 의존성 문제 조사: `npm ls <package>`
+  - 캐시 문제 해결: `rm -rf node_modules && npm ci` 및 `npm cache clean --force`
 
-- Husky가 설치되어 있으며, pre-commit 훅에서 `lint-staged`를 통해 변경 파일에 대해 ESLint와 Prettier가 실행됩니다.
+## 간단 체크리스트(로컬 실행 시)
 
-주의 (ESLint v9 / Husky v9)
+1. `nvm install && nvm use`
+2. `npm ci`
+3. `npm run prepare` (Husky)
+4. `npm run lint` 및 `npm run format` (필요 시 `--fix`)
+5. `npm run build` → `npm run preview:dist`
+6. `npm run test -- --run`
 
-- 이 저장소는 ESLint v9(flat config)와 Husky v9로 업데이트되었습니다. 로컬에서 다음 순서를 따르세요:
-  1. `npm install`로 의존성 설치
+위 사항을 따르고도 반복 에러가 있으면, `build.log`와 `npm ci` 로그를 첨부해 알려주세요.
 
-2.  `npm run prepare`를 실행해 Husky 훅을 설치(`prepare` 스크립트가 `husky install`을 실행함)
-3.  `npm run lint` 및 `npm run format`을 실행해 로컬에서 규칙을 확인/적용
+---
 
-- ESLint v9은 기존의 `.eslintrc.*` 방식과 다르게 `eslint.config.js`(혹은 `eslint.config.cjs`)형태의 flat config를 사용합니다. 이 저장소는 이미 `eslint.config.cjs`를 포함하고 있으므로 별도 설정 없이 동작해야 합니다. 문제가 발생하면 `eslint.config.cjs`와 `.editorconfig`, `.prettierrc`를 확인하세요.
+## 리포지토리 정리 제안 및 자동 삭제 항목
 
-- Husky v9은 설치 후 훅 스크립트 호환성에 주의를 기울여야 합니다. `npm run prepare`를 실행하면 훅이 설치되며, 훅이 정상 동작하는지 간단히 `git add . && git commit -m "test"`로 확인할 수 있습니다.
+아래 파일/폴더는 빌드 산출물 또는 감사 보고서처럼 재생성 가능하므로 보통 소스 저장소에는 보관할 필요가 없습니다. 아래 항목들을 안전하게 삭제하고 커밋하겠습니다(삭제 전에 목록을 보여드립니다).
 
-PR preview artifact
+- `audit_report.json`, `audit_report_after.json`, `audit_report_after2.json` (감사 리포트)
+- `artifacts/` (릴리스 아카이브 및 sha256)
+- 기타 대용량 생성물(`dist/`, `.DS_Store`)이 존재하면 제거 권장
 
-- Pull Request를 열면 GitHub Actions가 빌드 산출물을 `preview-dist`라는 아티팩트로 업로드합니다.
-- 리뷰어는 Actions의 'Artifacts'에서 `preview-dist`를 다운로드해 로컬에서 `npx serve dist` 등으로 미리보기를 확인할 수 있습니다.
+원하시면 이 삭제 동작은 취소 가능하도록 먼저 백업 디렉터리(`docs/archive/cleanup-backup-<timestamp>/`)로 이동한 뒤 커밋하도록 변경할 수 있습니다. 기본 동작은 원하시면 "삭제 및 커밋"을 바로 실행하겠습니다.
 
-GitHub CLI (`gh`) 사용
+---
 
-- 개발자는 로컬에서 GitHub Actions 실행 상태를 빠르게 확인하려면 `gh` CLI를 설치해 사용하세요.
-- 설치(macOS + Homebrew):
-
-```bash
-brew install gh
-gh auth login
-gh auth status
-```
-
-- 유용한 명령 예:
-
-```bash
-gh run list --repo <owner>/<repo> --limit 10
-gh run view <run-id> --repo <owner>/<repo>
-gh run view <run-id> --repo <owner>/<repo> --web
-gh run download <run-id> --repo <owner>/<repo> --name preview-dist
-```
-
-CI 포맷·린트 정책 (중요)
-
-- 워크플로 동작 요약:
-  - `push` (main에 대한 푸시): 전체 포맷 검사, 린트 검사, 빌드 및 배포(해당 워크플로우가 활성화된 경우)를 실행합니다.
-  - `pull_request` (same-repo PR): CI는 자동으로 Prettier 및 ESLint --fix를 시도하고, 변경 사항이 있으면 해당 PR 브랜치에 커밋을 시도합니다(브랜치 보호나 포크 PR의 경우 푸시가 불가능하면 안내 메시지를 남깁니다).
-  - `pull_request` (fork PR): 포맷/린트 검사를 실행하지만, 자동 푸시가 불가능하므로 실패로 차단하지 않고 안내 메시지를 표시합니다. 외부 기여자는 로컬에서 `npm run format` 및 `npm run lint`를 실행해 수정한 뒤 다시 PR을 업데이트해야 합니다.
-
-- 권장 작업 흐름:
-  1.  로컬에서 작업 브랜치를 만들고 개발합니다.
-  2.  커밋 전에 `npm run format`과 `npm run lint`를 실행하거나 Husky pre-commit 훅이 자동 실행되도록 합니다.
-  3.  같은 저장소에 PR을 여는 경우 CI가 자동으로 포맷/린트를 커밋할 수 있으므로 변경을 수락할 수 있습니다. 포크 PR인 경우에는 로컬에서 포맷/린트를 실행해 주세요.
-
-- 문제 해결 팁:
-  - CI가 자동 커밋을 시도했지만 푸시가 실패하면(포크 또는 보호된 브랜치) CI 로그에 실패 원인이 기록됩니다. 이 경우 안내에 따라 로컬에서 포맷을 적용하고 PR을 업데이트하세요.
-  - 포맷/린트 규칙을 변경하려면 `.eslintrc.json`, `.prettierrc`, 또는 `.editorconfig`를 업데이트하고 팀과 합의 후 커밋하세요.
-
-## CI auto-fix behavior (summary)
-
-- For pull requests opened from branches within this repository, CI will attempt to run Prettier and ESLint with `--fix` and commit any changes back to the source branch. If the branch is protected or the workflow lacks permissions, the push will fail and CI will add a helpful message to the run logs explaining the action required (typically: run `npm run format` and `npm run lint` locally, then push the fixes).
-
-- For pull requests opened from forks, CI runs format and lint checks but will not attempt to push changes back to the fork. Fork contributors should run `npm run format` and `npm run lint` locally and push the updates or open a branch on this repo so CI can commit fixes.
-
-- CI logs will contain details when auto-fix attempts occur; reviewers can check the "Actions" tab for the PR to see any auto-commit changes.
+문서 업데이트 완료: 이 파일에 실행 가이드를 추가했습니다. 추가로 원하시면 예제 명령 블록을 늘리거나 `scripts/cleanup.sh`와 `Makefile`을 생성해 드리겠습니다.
