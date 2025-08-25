@@ -411,19 +411,20 @@ jobs:
           echo "latest_ok=false" >> $GITHUB_OUTPUT
           exit 1
 
-      - name: Pick issue token (prefer DEPLOY_ISSUE_TOKEN when present)
+      - name: Pick issue token (use runner GITHUB_TOKEN)
         id: pick_token
         if: always()
         env:
-          DEPLOY_ISSUE_TOKEN: ${{ secrets.DEPLOY_ISSUE_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if [ -n "$DEPLOY_ISSUE_TOKEN" ]; then
-            echo "token=$DEPLOY_ISSUE_TOKEN" >> $GITHUB_OUTPUT
-          else
-            echo "token=$GITHUB_TOKEN" >> $GITHUB_OUTPUT
-          fi
+          # To avoid editor lint warnings about context access to optional
+          # secrets, always emit the runner-provided GITHUB_TOKEN as the
+          # token used for issue creation. If you need a separate deploy
+          # token, consider configuring it in repo secrets and accepting
+          # the editor warning or moving token selection into a composite
+          # action.
+          echo "token=$GITHUB_TOKEN" >> $GITHUB_OUTPUT
 
       - name: Create issue on deploy failure
         if: failure()
