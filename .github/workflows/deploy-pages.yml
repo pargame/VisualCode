@@ -389,6 +389,7 @@ jobs:
 
       - name: Pick issue token (prefer DEPLOY_ISSUE_TOKEN when present)
         id: pick_token
+        if: always()
         env:
           DEPLOY_ISSUE_TOKEN: ${{ secrets.DEPLOY_ISSUE_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
