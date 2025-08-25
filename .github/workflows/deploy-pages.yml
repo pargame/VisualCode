@@ -168,11 +168,23 @@ jobs:
               cp -a "site/$REPO_NAME/assets/." site/assets/ || true
             fi
             # copy index.html to site root so validation can find it
-            if [ -f "$PUBLISH_DIR/index.html" ]; then
-              cp "$PUBLISH_DIR/index.html" site/index.html
-              # Also create an index-latest variant to help clients fetch a network-first HTML
-              # This file will contain a build marker and normalized cache-bust query for assets.
-              cp "$PUBLISH_DIR/index.html" site/index-latest.html || true
+              if [ -f "$PUBLISH_DIR/index.html" ]; then
+                cp "$PUBLISH_DIR/index.html" site/index.html
+                # Also create an index-latest variant to help clients fetch a network-first HTML
+                # Create a candidate and validate it before exposing as index-latest to avoid publishing truncated/invalid HTML.
+                cp "$PUBLISH_DIR/index.html" site/index-latest.html || true
+                # Validate index-latest candidate: must contain build meta and root or asset refs and be non-trivially sized.
+                IL=site/index-latest.html
+                if [ -f "$IL" ]; then
+                  LEN=$(wc -c < "$IL" || echo 0)
+                  HASBUILD=$(grep -qi "<meta[^>]*name=\"build\"[^>]*content=\"latest\"" "$IL" && echo 1 || echo 0)
+                  HASROOT=$(grep -qi "<div[^>]*id=\"root\"" "$IL" && echo 1 || echo 0)
+                  HASASSET=$(grep -qiE "/assets/|assets/" "$IL" && echo 1 || echo 0)
+                  if [ "$HASBUILD" -ne 1 ] || [ $((LEN)) -lt 512 ] || { [ "$HASROOT" -ne 1 ] && [ "$HASASSET" -ne 1 ]; }; then
+                    echo "index-latest candidate failed validation (len=$LEN, build=$HASBUILD, root=$HASROOT, asset=$HASASSET) — removing candidate"
+                    rm -f "$IL"
+                  fi
+                fi
               # If a service worker exists in the publish dir, also expose it at the site root so clients can unregister properly
               if [ -f "$PUBLISH_DIR/sw.js" ]; then
                 echo "Copying service worker to site root: sw.js"
