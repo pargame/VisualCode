@@ -42,7 +42,7 @@
 
 ## Recent changes
 
-- 2025-08-24: Imported local audit reports for traceability: `audit_report_after.json` and `audit_report_after2.json` (see repository root). These show zero known vulnerabilities after remediation.
+- 2025-08-24: Imported local audit reports for traceability: `audit_report_after.json` and `audit_report_after2.json` (archived in `docs/archive/` and removed from repo root). These show zero known vulnerabilities after remediation.
 - 2025-08-24: Published release for dependency upgrades: [v0.0.1-deps-20250824](https://github.com/pargame/VisualCode/releases/tag/v0.0.1-deps-20250824) (React 19, ESLint 9, Husky 9).
   Release assets: `VisualCode-dist-v0.0.1-deps-20250824.zip` attached to the release (build output `dist/`).
 

@@ -158,7 +158,7 @@ fi
 ## 아카이브 및 클린업 (이번 작업 요약)
 
 - 이번 세션에서 로컬/레포지토리 정리 작업을 수행했습니다:
-  - `audit_report.json`, `audit_report_after.json`, `audit_report_after2.json` 파일들을 `archive/`로 이동 후, 깃에서 제거했습니다.
+  - `audit_report.json`, `audit_report_after.json`, `audit_report_after2.json` 파일들은 `docs/archive/`로 이동되어 저장소 루트에는 더 이상 존재하지 않습니다.
   - 관련 커밋:
     - `0d6343f` — archive: moved audit reports into `archive/` and added `docs/archive/NOTIFICATIONS-2025-08-24.md`
     - `8b2a6ee` — chore: archive audit reports, artifacts and UserFile (workspace commits)

@@ -153,8 +153,23 @@ gh run download <run-id> --repo <owner>/<repo> --name preview-dist
 - `audit_report.json`, `audit_report_after.json`, `audit_report_after2.json` (감사 리포트)
 - `artifacts/` (릴리스 아카이브 및 sha256)
 - 기타 대용량 생성물(`dist/`, `.DS_Store`)이 존재하면 제거 권장
+- `audit_report.json`, `audit_report_after.json`, `audit_report_after2.json` (감사 리포트 — 현재 저장소 루트에는 존재하지 않습니다; 필요하면 `docs/archive/` 또는 git history에서 복원하세요)
+- `artifacts/` (릴리스 아카이브 및 sha256)
+- 기타 대용량 생성물(`dist/`, `.DS_Store`)이 존재하면 제거 권장
 
-원하시면 이 삭제 동작은 취소 가능하도록 먼저 백업 디렉터리(`docs/archive/cleanup-backup-<timestamp>/`)로 이동한 뒤 커밋하도록 변경할 수 있습니다. 기본 동작은 원하시면 "삭제 및 커밋"을 바로 실행하겠습니다.
+권장 삭제 절차: 삭제하기 전에 기본적으로 해당 항목을 타임스탬프ed 폴더로 이동하여 백업한 뒤 커밋합니다. 예:
+
+```bash
+ts=$(date -u +%Y%m%d%H%M%S)
+bak="docs/archive/cleanup-backup-${ts}"
+mkdir -p "$bak"
+git mv audit_report*.json "$bak" 2>/dev/null || true
+git mv artifacts "$bak" 2>/dev/null || true
+git add -A
+git commit -m "chore: backup generated artifacts before cleaning ($ts)"
+```
+
+이후 문제가 없으면 원격에 푸시하고 로컬/원격에서 영구 삭제를 진행하세요.
 
 ---
 
