@@ -35,6 +35,26 @@
 
 - 민감 권한 요구, 보안 이슈, 또는 히스토리 재작성과 같은 파괴적 작업은 반드시 사람 운영자 승인 필요
 
----
-
 자세한 절차와 예시는 `docs/DEPLOYMENT.md`, `docs/CI_SMOKE.md`, `docs/SECURITY.md`를 참고하세요.
+
+## Operational checklist (AI-safe, minimal)
+
+Use this mini-checklist when running AI-driven updates. It keeps the agent workflow safe and simple for single-developer projects.
+
+- Secrets & tokens:
+  - Keep `GITHUB_TOKEN` as primary. Add `DEPLOY_ISSUE_TOKEN` only if cross-repo actions are required.
+  - Store `OPENAI_API_KEY` or other model keys in `Settings → Secrets`. Rotate if suspected compromised.
+
+- Pre-merge checks (required):
+  - Lint and format must pass (`npm run lint`, `npm run check:format`).
+  - Tests must pass (`npm run test`) and build should succeed (`npm run build`).
+  - Human approval: at least one reviewer must approve AI-generated PRs before merge.
+
+- Safe automation patterns:
+  - Agent-created branches: use `feat/ai/` prefix and open a PR; do not push directly to `main`.
+  - Non-destructive: prefer PRs that contain behaviorally-small, test-covered changes.
+
+- Emergency control:
+  - If an AI PR causes regressions, revert using normal git revert or use `main-backup` mirror to restore quickly.
+
+These minimal rules keep AI work productive without increasing infra complexity.
