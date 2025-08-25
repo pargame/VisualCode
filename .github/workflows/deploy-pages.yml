@@ -305,7 +305,36 @@ jobs:
           OWNER="${{ github.repository_owner }}"
           REPO="${{ github.event.repository.name }}"
           URL="https://${OWNER}.github.io/${REPO}/"
-          curl -fsS "$URL" | grep -q '<div id="root"' || (echo 'Root div not found in HTML' && exit 1)
+
+          # Check root HTML contains expected app mount
+          echo "Fetching $URL"
+          curl -fsS "$URL" -o /tmp/pages_root.html || (echo 'Failed to fetch site root' && exit 1)
+          grep -q '<div id="root"' /tmp/pages_root.html || (echo 'Root div not found in HTML' && exit 1)
+
+          # Extract asset references from the root HTML and verify each returns HTTP 200 (no-cache)
+          ASSETS=$(grep -Eo '(href|src)="[^"]+"' /tmp/pages_root.html | sed -E 's/.*="([^"]+)"/\1/' | grep -E '/assets/|^assets/' | sort -u || true)
+          if [ -n "$ASSETS" ]; then
+            echo "Validating ${#ASSETS[@]} referenced assets..."
+            for a in $ASSETS; do
+              [ -z "$a" ] && continue
+              if echo "$a" | grep -q '^http'; then
+                url="$a"
+              elif echo "$a" | grep -q '^/'; then
+                url="https://${OWNER}.github.io${a}"
+              else
+                url="https://${OWNER}.github.io/${REPO}/${a}"
+              fi
+              echo "HEAD $url"
+              HTTP_CODE=$(curl -fsS -o /dev/null -w "%{http_code}" -H 'Cache-Control: no-cache' "$url" || true)
+              if [ "$HTTP_CODE" != "200" ]; then
+                echo "ERROR: asset $url returned $HTTP_CODE" && exit 1
+              else
+                echo "OK: $url -> $HTTP_CODE"
+              fi
+            done
+          else
+            echo "No assets referenced in root HTML matching /assets/ or assets/"
+          fi
 
   rollback:
     if: ${{ github.event_name == 'push' && needs.smoke-check.result == 'failure' }}
