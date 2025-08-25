@@ -33,15 +33,16 @@ body::before {
   pointer-events: none;
   z-index: 0;
 }
+/* remove any global centered 'main' panel that can visually constrain the layout */
 main {
-  position: relative;
-  z-index: 1;
-  max-width: 54rem;
-  margin: 3rem auto;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  position: static;
+  z-index: 0;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 a {
   color: #0366d6;
