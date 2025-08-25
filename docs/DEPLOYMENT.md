@@ -171,6 +171,15 @@ npm ci && npm run build
 sh ./scripts/deploy-gh-pages.sh
 ```
 
+## Recent agent-driven deploy script changes (2025-08-26)
+
+- The helper `scripts/deploy-gh-pages.sh` was updated to improve Pages reliability:
+  - create a `.nojekyll` marker at site root to avoid Jekyll filtering
+  - copy built `assets/` to the site root so `/assets/...` is available in addition to `/VisualCode/assets/...`
+  - rewrite generated `index.html` asset paths to prefer `/assets/...` and provide a raw.githubusercontent fallback for edge cases
+
+These changes were applied as part of an emergency redeploy attempt; if Pages still returns 404 for nested assets, check the repository's Pages settings and the Pages cache/edge propagation.
+
 What the script does:
 
 - copies `dist/` into a temporary directory

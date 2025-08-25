@@ -28,6 +28,44 @@ fi
 # site is served verbatim by creating a .nojekyll marker in the site root.
 touch "$TMP_DIR/.nojekyll"
 
+# Also make a copy of the built assets at the site root (assets/) so that
+# both /assets/... and /VisualCode/assets/... are available. Some Pages
+# configurations or CDN edge caches have served the HTML but returned 404
+# for nested paths; duplicating to root is a conservative workaround.
+if [ -d "$DIST_DIR/assets" ]; then
+  mkdir -p "$TMP_DIR/assets"
+  cp -R "$DIST_DIR/assets"/* "$TMP_DIR/assets/"
+fi
+
+# Rewrite asset paths in the index.html files to point at /assets instead of
+# /VisualCode/assets. This makes the site load from a consistent root path.
+if [ -f "$TMP_DIR/index.html" ]; then
+  sed -i.bak 's|/VisualCode/assets/|/assets/|g' "$TMP_DIR/index.html" || true
+fi
+if [ -f "$TMP_DIR/$REPO_NAME/index.html" ]; then
+  sed -i.bak 's|/VisualCode/assets/|/assets/|g' "$TMP_DIR/$REPO_NAME/index.html" || true
+fi
+
+# As a fallback for GitHub Pages edge cache issues, rewrite asset references to
+# point directly at raw.githubusercontent so clients can fetch assets even if the
+# Pages CDN returns a 404 for nested asset paths. Derive owner/repo from origin.
+REMOTE_URL="$(git -C "$REPO_ROOT" remote get-url origin 2>/dev/null || true)"
+if [ -n "$REMOTE_URL" ]; then
+  OWNER_REPO="$(echo "$REMOTE_URL" | sed -E 's#.*github.com[:/]+([^/]+/[^/.]+)(\.git)?#\1#')"
+  RAW_BASE="https://raw.githubusercontent.com/${OWNER_REPO}/gh-pages/VisualCode/assets"
+  # find JS/CSS names from the dist assets
+  JS_NAME="$(ls "$DIST_DIR/assets" 2>/dev/null | grep -E '\.js$' | head -n1 || true)"
+  CSS_NAME="$(ls "$DIST_DIR/assets" 2>/dev/null | grep -E '\.css$' | head -n1 || true)"
+  if [ -n "$JS_NAME" ]; then
+    sed -i.bak "s|/VisualCode/assets/$JS_NAME|$RAW_BASE/$JS_NAME|g" "$TMP_DIR/index.html" "$TMP_DIR/$REPO_NAME/index.html" 2>/dev/null || true
+    sed -i.bak "s|/assets/$JS_NAME|$RAW_BASE/$JS_NAME|g" "$TMP_DIR/index.html" "$TMP_DIR/$REPO_NAME/index.html" 2>/dev/null || true
+  fi
+  if [ -n "$CSS_NAME" ]; then
+    sed -i.bak "s|/VisualCode/assets/$CSS_NAME|$RAW_BASE/$CSS_NAME|g" "$TMP_DIR/index.html" "$TMP_DIR/$REPO_NAME/index.html" 2>/dev/null || true
+    sed -i.bak "s|/assets/$CSS_NAME|$RAW_BASE/$CSS_NAME|g" "$TMP_DIR/index.html" "$TMP_DIR/$REPO_NAME/index.html" 2>/dev/null || true
+  fi
+fi
+
 cd "$TMP_DIR"
 git init -q
 git checkout -b gh-pages
