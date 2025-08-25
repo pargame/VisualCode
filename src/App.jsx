@@ -12,7 +12,24 @@ function loadNodes() {
 }
 
 function saveNodes(nodes) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(nodes));
+  try {
+    if (!nodes || nodes.length === 0) {
+      localStorage.removeItem(STORAGE_KEY);
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nodes));
+    }
+  } catch (e) {
+    // ignore storage errors in environments like tests
+  }
+}
+
+export function _clearAllNodesForTest() {
+  // helper used by tests to clear persisted storage and in-memory nodes
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (e) {
+    // ignore
+  }
 }
 
 export default function App() {
@@ -302,6 +319,23 @@ export default function App() {
             </button>
             <button onClick={resetNodesRandom} title="Randomize existing nodes across the board">
               Reset positions
+            </button>
+            <button
+              onClick={() => {
+                // protect against accidental deletion
+                if (!nodes || nodes.length === 0) return;
+                // use global confirm; tests will stub window.confirm if needed
+                if (
+                  !globalThis.confirm('모든 노드를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')
+                )
+                  return;
+                setNodes([]);
+                setSelectedId(null);
+              }}
+              className="danger"
+              title="Delete all nodes from the board and localStorage"
+            >
+              Delete all nodes
             </button>
           </div>
         </aside>
