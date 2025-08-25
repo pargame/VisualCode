@@ -2,7 +2,7 @@ name: Pages smoke check
 
 on:
   push:
-    branches: [ gh-pages ]
+    branches: [gh-pages]
   workflow_dispatch: {}
 
 jobs:

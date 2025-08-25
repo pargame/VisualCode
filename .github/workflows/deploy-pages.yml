@@ -318,7 +318,7 @@ jobs:
           folder: site
           clean: true
           force: true
-          commit-message: "chore: deploy site via CI (${GITHUB_SHA})"
+          commit-message: 'chore: deploy site via CI (${GITHUB_SHA})'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
