@@ -34,8 +34,11 @@ export default function App() {
     // create a node at the clicked position on the board
     if (!boardRef.current) return;
     const rect = boardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // include scroll offsets so coordinates map to board content (not just viewport)
+    const scrollLeft = boardRef.current.scrollLeft || 0;
+    const scrollTop = boardRef.current.scrollTop || 0;
+    const x = e.clientX - rect.left + scrollLeft;
+    const y = e.clientY - rect.top + scrollTop;
     const { sx: snapX, sy: snapY } = snapToDiagGrid(x, y);
 
     const id = Date.now();
@@ -70,14 +73,16 @@ export default function App() {
 
       if (isInteractive) return;
 
-      // compute coordinates relative to the viewport so clicks anywhere map to the board
-      // (the board is fixed to inset:0 so viewport coords match board coords)
-      const rect = { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
-      let x = e.clientX - rect.left;
-      let y = e.clientY - rect.top;
+      // compute coordinates relative to the board content so clicks anywhere map to the
+      // board correctly even when the board has been scrolled.
+      const rect = boardRef.current.getBoundingClientRect();
+      const scrollLeft = boardRef.current.scrollLeft || 0;
+      const scrollTop = boardRef.current.scrollTop || 0;
+      let x = e.clientX - rect.left + scrollLeft;
+      let y = e.clientY - rect.top + scrollTop;
       // clamp to viewport bounds
-      x = Math.max(0, Math.min(x, rect.width));
-      y = Math.max(0, Math.min(y, rect.height));
+      x = Math.max(0, Math.min(x, rect.width + scrollLeft));
+      y = Math.max(0, Math.min(y, rect.height + scrollTop));
       const { sx: snapX, sy: snapY } = snapToDiagGrid(x, y);
 
       const id = Date.now();
