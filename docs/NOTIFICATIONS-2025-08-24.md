@@ -19,7 +19,7 @@ Verification performed:
 - `npm run prepare` — OK (Husky hooks installed)
 - `npm run test` — OK
 - `npm run build` — OK
-- Local audit reports: `audit_report_after.json`, `audit_report_after2.json` (no vulnerabilities)
+- Local audit reports: `audit_report_after.json`, `audit_report_after2.json` (no vulnerabilities) — archived under `docs/archive/` and removed from repo root
 
 Developer action items:
 
