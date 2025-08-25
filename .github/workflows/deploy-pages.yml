@@ -214,13 +214,21 @@ jobs:
             echo "ERROR: site/index.html not found" && exit 1
           fi
           # ensure assets referenced by index.html exist in the site folder
-          ASSETS=$(grep -oE "/${{ github.event.repository.name }}/assets/[^\"'\s>]+" site/index.html | sed 's#^/##' | sort -u || true)
+          ASSETS=$(grep -oE "/${{ github.event.repository.name }}/assets/[^\"'\s>]+" site/index.html | tr -d '\r' | sed 's#^/##' | sort -u || true)
           if [ -n "$ASSETS" ]; then
             echo "Validating referenced assets:" && echo "$ASSETS"
             MISSING=0
             for a in $ASSETS; do
-              if [ ! -f "site/$a" ]; then
-                echo "MISSING: site/$a" && MISSING=1
+              # normalize candidates
+              SHORT_PATH="${a#*/}"          # path without leading repo/ prefix
+              CAND1="site/$a"               # site/VisualCode/assets/...
+              CAND2="site/$SHORT_PATH"      # site/assets/...
+              echo "Checking: $CAND1 or $CAND2"
+              if [ -f "$CAND1" ] || [ -f "$CAND2" ]; then
+                echo "FOUND: $a"
+                continue
+              else
+                echo "MISSING: $a (looked at $CAND1 and $CAND2)" && MISSING=1
               fi
             done
             if [ "$MISSING" -ne 0 ]; then
