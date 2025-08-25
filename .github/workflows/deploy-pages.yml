@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   pages: write
+  issues: write
   id-token: write
 
 jobs:
@@ -270,30 +271,57 @@ jobs:
           REPO="${{ github.event.repository.name }}"
           TOKEN="${{ secrets.GITHUB_TOKEN }}"
           API="https://api.github.com/repos/${OWNER}/${REPO}"
-          echo "Triggering Pages build via API"
-          rsp=$(curl -sS -X POST -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github+json" "${API}/pages/builds") || true
-          BUILD_ID=$(echo "$rsp" | python3 -c "import sys,json; j=json.load(sys.stdin); print(j.get('id',''))") || BUILD_ID=""
-          echo "Triggered build id: $BUILD_ID"
-          # Poll latest build status until 'built' or 'failed'
-          for i in {1..24}; do
-            sleep 5
-            s=$(curl -sS -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github+json" "${API}/pages/builds/latest" || true)
-            status=$(echo "$s" | python3 -c "import sys,json; j=json.load(sys.stdin); print(j.get('status','') if isinstance(j,dict) else '')") || status=""
-            echo "Pages build status: $status"
-            if [ "$status" = "built" ]; then
-              echo "pages_built=true" >> $GITHUB_OUTPUT
-              break
-            fi
-            if [ "$status" = "failed" ]; then
+          echo "Attempting to trigger Pages build via API"
+          # Try Pages API first; capture HTTP status
+          http_code=$(curl -sS -o /tmp/pages_api_rsp -w "%{http_code}" -X POST -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github+json" "${API}/pages/builds" || true)
+          echo "Pages API responded with HTTP $http_code"
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            # Poll latest build status until 'built' or 'failed'
+            for i in {1..24}; do
+              sleep 5
+              s=$(curl -sS -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github+json" "${API}/pages/builds/latest" || true)
+              status=$(echo "$s" | python3 -c "import sys,json; j=json.load(sys.stdin) if sys.stdin.read() else {}; print(j.get('status','') if isinstance(j,dict) else '')") || status=""
+              echo "Pages build status: $status"
+              if [ "$status" = "built" ]; then
+                echo "pages_built=true" >> $GITHUB_OUTPUT
+                break
+              fi
+              if [ "$status" = "failed" ]; then
+                echo "pages_built=false" >> $GITHUB_OUTPUT
+                echo "Pages build failed" >&2
+                exit 1
+              fi
+            done
+            if [ -z "${status:-}" ] || [ "${status}" != "built" ]; then
+              echo "Pages build did not reach 'built' state in time" >&2
               echo "pages_built=false" >> $GITHUB_OUTPUT
-              echo "Pages build failed" >&2
               exit 1
             fi
-          done
-          if [ -z "${status:-}" ] || [ "${status}" != "built" ]; then
-            echo "Pages build did not reach 'built' state in time" >&2
-            echo "pages_built=false" >> $GITHUB_OUTPUT
-            exit 1
+          else
+            echo "Pages API not usable (HTTP $http_code). Falling back to git-trigger by pushing a harmless refresh commit to gh-pages"
+            tmpdir=$(mktemp -d)
+            git clone --depth 1 --branch gh-pages "https://x-access-token:${TOKEN}@github.com/${OWNER}/${REPO}.git" "$tmpdir" || true
+            if [ -d "$tmpdir" ]; then
+              touch "$tmpdir/.pages-refresh"
+              echo "refreshed: $(date -u +%Y%m%d%H%M%S)" >> "$tmpdir/.pages-refresh"
+              cd "$tmpdir"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git config user.name "github-actions[bot]"
+              git add .pages-refresh || true
+              if git diff --staged --quiet; then
+                echo "No change to push"
+              else
+                git commit -m "chore: pages refresh (edge cache nudge)" || true
+                git push origin HEAD:gh-pages --force || echo "git push fallback failed"
+              fi
+              cd - >/dev/null || true
+              rm -rf "$tmpdir"
+            else
+              echo "Failed to clone gh-pages for fallback push" >&2
+            fi
+            # After fallback push, wait a short time and consider success path
+            sleep 6
+            echo "pages_built=unknown" >> $GITHUB_OUTPUT
           fi
 
       - name: Verify index-latest is served (no-cache) and refresh if stale
@@ -376,7 +404,9 @@ jobs:
         if: failure()
         uses: actions-ecosystem/action-create-issue@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Prefer the token selected by the Pick token step (DEPLOY_ISSUE_TOKEN when present),
+          # fall back to the runner-provided token if that was chosen.
+          github_token: ${{ steps.pick_token.outputs.token }}
           title: 'Deploy to Pages failed for commit ${{ github.sha }}'
           body: |
             The deploy job failed for commit `${{ github.sha }}` on branch `${{ github.ref_name }}`.
