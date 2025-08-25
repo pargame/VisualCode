@@ -90,17 +90,48 @@ function probeAndReplaceIndexLatest(intervalMs = 10000, attempts = 6) {
         .then((text) => {
           if (!text) return;
           try {
-            // detect build marker meta tag
-            const hasLatest = /<meta[^>]+name=["']build["'][^>]+content=["']latest["'][^>]*>/i.test(
-              text
-            );
+            // Basic safety checks before performing any replacement:
+            // - must contain build meta marker
+            // - must contain the app mount or an asset reference
+            // - must be of a sensible length
+            const hasBuildMeta =
+              /<meta[^>]+name=["']build["'][^>]+content=["']latest["'][^>]*>/i.test(text);
+            const hasRoot = /<div[^>]+id=["']root["'][^>]*>/i.test(text);
+            const hasAssetRef =
+              /\/(assets|assets\/)[^"'\s>]+/i.test(text) ||
+              /<script[^>]+src=["'][^"']+assets\//i.test(text);
+            const minLengthOk = typeof text === 'string' && text.length > 512;
+
             const currentMeta = document.querySelector('meta[name="build"]');
             const currentIsLatest = currentMeta && /latest/i.test(currentMeta.content || '');
-            if (hasLatest && !currentIsLatest) {
-              // replace document with fetched HTML (force newest)
-              document.open();
-              document.write(text);
-              document.close();
+
+            if (hasBuildMeta && (hasRoot || hasAssetRef) && minLengthOk && !currentIsLatest) {
+              // Safe action: don't document.write arbitrary HTML. Instead, force a
+              // network reload with a cache-busting query so the browser fetches
+              // the latest HTML/assets from the server. This avoids executing
+              // unknown inline scripts via document.write.
+              try {
+                const newUrl =
+                  window.location.pathname +
+                  (window.location.search ? window.location.search + '&' : '?') +
+                  'v=latest-' +
+                  Date.now();
+                console.info(
+                  '[probe] index-latest valid and newer; reloading with cache-buster',
+                  newUrl
+                );
+                // Use replace so history isn't polluted
+                window.location.replace(newUrl);
+              } catch (e) {
+                console.warn('[probe] failed to reload page safely', e);
+              }
+            } else {
+              // Log for diagnostics when probe finds unexpected payloads
+              if (!hasBuildMeta) console.warn('[probe] index-latest missing build meta');
+              if (!hasRoot && !hasAssetRef)
+                console.warn('[probe] index-latest missing root or asset refs');
+              if (!minLengthOk)
+                console.warn('[probe] index-latest response too short (possible placeholder)');
             }
           } catch (e) {
             // ignore
