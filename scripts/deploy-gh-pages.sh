@@ -13,8 +13,20 @@ if [ ! -d "$DIST_DIR" ]; then
   exit 1
 fi
 
-echo "Preparing deploy from $DIST_DIR -> $TMP_DIR"
-cp -R "$DIST_DIR"/* "$TMP_DIR/"
+REPO_NAME="$(basename "$REPO_ROOT")"
+echo "Preparing deploy from $DIST_DIR -> $TMP_DIR (repo subdir: $REPO_NAME)"
+# Place build outputs under a repo-named subdirectory so absolute base paths like
+# /$REPO_NAME/assets/... resolve correctly when served from GitHub Pages.
+mkdir -p "$TMP_DIR/$REPO_NAME"
+cp -R "$DIST_DIR"/* "$TMP_DIR/$REPO_NAME/"
+# Also copy the index.html to the site root so the site root serves the app HTML
+if [ -f "$TMP_DIR/$REPO_NAME/index.html" ]; then
+  cp "$TMP_DIR/$REPO_NAME/index.html" "$TMP_DIR/index.html" || true
+fi
+
+# Prevent GitHub Pages (Jekyll) from filtering/ignoring files. Ensure the
+# site is served verbatim by creating a .nojekyll marker in the site root.
+touch "$TMP_DIR/.nojekyll"
 
 cd "$TMP_DIR"
 git init -q
