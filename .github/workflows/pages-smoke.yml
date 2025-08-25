@@ -35,6 +35,20 @@ jobs:
           echo "Checking for <div id=\"root\">..."
           echo "$HTML" | grep -q '<div id="root"' || (echo "ERROR: root div not found" && exit 1)
 
+          # check for index-latest availability and SW-unregister marker
+          LATEST_URL="${URL}index-latest.html"
+          echo "Probing index-latest: $LATEST_URL"
+          HTTP_LATEST=$(curl -fsS -o /dev/null -w "%{http_code}" "$LATEST_URL" || true)
+          if [ "$HTTP_LATEST" != "200" ]; then
+            echo "WARNING: index-latest returned $HTTP_LATEST";
+            curl -fsS -I "$LATEST_URL" || true
+          else
+            echo "index-latest reachable (200); validating content"
+            LHTML=$(curl -fsS "$LATEST_URL")
+            echo "$LHTML" | grep -q 'meta name="build" content="latest"' || echo "NOTE: build meta not found in index-latest"
+            echo "$LHTML" | grep -q 'unregister' && echo "Found unregister script in index-latest" || echo "No unregister script found in index-latest"
+          fi
+
           # find asset paths referenced under /<repo>/assets/
           ASSETS=$(echo "$HTML" | grep -oE "/${NAME}/assets/[^\"'\s>]+" | sort -u || true)
           if [ -z "$ASSETS" ]; then
