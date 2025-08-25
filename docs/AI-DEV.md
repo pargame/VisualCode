@@ -1,60 +1,21 @@
-# AI Contributor / Agent Onboarding
+# Copilot 작업 필수 흐름(대원칙)
 
-이 문서는 AI 에이전트(자동화된 봇 또는 AI 개발자)가 이 리포지터리에서 안전하게 작업하고 변경을 만들기 위해 필요한 규칙과 기대 동작을 정리합니다.
+1. 모든 폴더 확실히 인지하기
 
-원칙
+- docs 내 다른 문서 다 확인
+- 다른 모든 워크플로, 소스파일 및 로직 전부 확인
 
-- 최소 권한으로 작동: PR/배포 권한은 필요할 때만 사용합니다. 민감한 secrets에 접근이 필요한 경우 사람 운영자의 승인이 필요합니다.
-- 비파괴 우선: 변경사항은 가능한 한 작은 단위의 PR로 제출하고, 검증(테스트/린트/빌드)이 녹색일 때만 main으로 병합합니다.
-- 투명성 유지: 모든 자동 변경은 상세한 커밋 메시지와 PR 설명을 동반합니다.
+2. 사용자 요청 접수
+3. 요청에 따라 작업 완수
+4. 변경 사항에 따른 최신화
 
-작업 흐름(요약)
+- docs 내 문서
+- .gitignore
+- .gitattribute 최신화
 
-1. 작업 생성: `feat/ai/<short-desc>` 또는 `fix/ai/<short-desc>` 브랜치 생성
-2. 로컬/CI 검증: `npm ci && npm run lint && npm run test -- --run && npm run build`
-3. PR 생성: PR 제목 형식 `AI: <short summary>` 사용. PR 본문에 변경 이유, 검증 방법, 위험요소와 롤백 절차를 명시
-4. 병합: 최소 1명의 인간 승인(코드리뷰) 필요. 긴급 hotfix만 예외로 함(사후 검토 필수)
+5. 깃 커밋 푸시 실행
+6. 빌드-배포-검증
+7. 깃 액션 실패시 해결
+8. 작업 완료
 
-토큰/시크릿 정책
-
-- AI 에이전트는 기본적으로 `GITHUB_TOKEN`으로 필요한 권한을 사용합니다. 교차-레포지토리 작업이나 추가 권한이 정말 필요한 경우에만 PAT(예: `DEPLOY_ISSUE_TOKEN`) 사용을 고려하고, 사용 전 담당자 승인을 받으세요.
-- 시크릿 사용 로그를 남기고, 시크릿이 노출되었다고 판단되면 즉시 회전 절차를 실행합니다.
-
-검증/테스트 우선순위
-
-- 린트 및 포맷: 자동화에 의해 포맷 변경이 발생하면 포맷만 포함된 별도 PR로 분리
-- 단위테스트 통과: 변경이 기능에 영향을 주는 경우 테스트를 작성하여 검증
-- 스모크 체크: 배포 전후 스모크 체크를 자동으로 실행하여 서비스 가용성을 확인
-
-비상 롤백
-
-- 배포중 문제 발생 시 `gh-pages-backup` 브랜치로 롤백하거나, 마지막 정상 태그로 강제 복구
-- 롤백 PR에는 원인 분석(간략)을 포함시켜 사후 리뷰를 진행
-
-운영자 연락(사람)
-
-- 민감 권한 요구, 보안 이슈, 또는 히스토리 재작성과 같은 파괴적 작업은 반드시 사람 운영자 승인 필요
-
-자세한 절차와 예시는 `docs/DEPLOYMENT.md`, `docs/CI_SMOKE.md`, `docs/SECURITY.md`를 참고하세요.
-
-## Operational checklist (AI-safe, minimal)
-
-Use this mini-checklist when running AI-driven updates. It keeps the agent workflow safe and simple for single-developer projects.
-
-- Secrets & tokens:
-  - Keep `GITHUB_TOKEN` as primary. Add `DEPLOY_ISSUE_TOKEN` only if cross-repo actions are required.
-  - Store `OPENAI_API_KEY` or other model keys in `Settings → Secrets`. Rotate if suspected compromised.
-
-- Pre-merge checks (required):
-  - Lint and format must pass (`npm run lint`, `npm run check:format`).
-  - Tests must pass (`npm run test`) and build should succeed (`npm run build`).
-  - Human approval: at least one reviewer must approve AI-generated PRs before merge.
-
-- Safe automation patterns:
-  - Agent-created branches: use `feat/ai/` prefix and open a PR; do not push directly to `main`.
-  - Non-destructive: prefer PRs that contain behaviorally-small, test-covered changes.
-
-- Emergency control:
-  - If an AI PR causes regressions, revert using normal git revert or use `main-backup` mirror to restore quickly.
-
-These minimal rules keep AI work productive without increasing infra complexity.
+<!-- Remaining content removed per user request on 2025-08-25 -->
