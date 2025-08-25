@@ -114,11 +114,29 @@ jobs:
             echo "publish_dir=public" >> $GITHUB_OUTPUT
           fi
 
+      - name: Normalize site structure for Pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          PUBLISH_DIR="${{ steps.find_dir.outputs.publish_dir }}"
+          REPO_NAME="${{ github.event.repository.name }}"
+          echo "Normalizing publish dir ($PUBLISH_DIR) into site/$REPO_NAME"
+          mkdir -p site
+          if [ -d "$PUBLISH_DIR" ]; then
+            mkdir -p "site/$REPO_NAME"
+            # copy contents preserving structure
+            cp -a "$PUBLISH_DIR/." "site/$REPO_NAME/"
+          else
+            echo "Warning: publish dir '$PUBLISH_DIR' not found; creating placeholder site/$REPO_NAME"
+            mkdir -p "site/$REPO_NAME"
+            printf '%s' "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Empty site</title></head><body><h1>Empty site</h1></body></html>" > "site/$REPO_NAME/index.html"
+          fi
+
       - name: Upload site artifact
         uses: actions/upload-artifact@v4
         with:
           name: site
-          path: ${{ steps.find_dir.outputs.publish_dir }}
+          path: site
 
       - name: Upload placeholder (no-op)
         run: echo "Build finished; publish_dir=${{ steps.find_dir.outputs.publish_dir }}"
