@@ -104,6 +104,37 @@ export default function App() {
     setNodes((s) => s.map((n) => (n.id === selectedId ? { ...n, code: codeDraft } : n)));
   }
 
+  // Auto-migrate saved coordinates from a centered/limited layout to full viewport
+  // This is a conservative transform assuming older layout width ~54rem (≈864px).
+  function migrateNodes() {
+    if (!boardRef.current) return;
+    const rect = boardRef.current.getBoundingClientRect();
+    const OLD_WIDTH = 54 * 16; // 54rem * 16px
+    const OLD_HEIGHT = Math.max(600, window.innerHeight * 0.7);
+    const scaleX = rect.width / OLD_WIDTH;
+    const scaleY = rect.height / OLD_HEIGHT;
+    setNodes((s) =>
+      s.map((n) => ({
+        ...n,
+        x: Math.round(Math.max(0, Math.min(rect.width, n.x * scaleX)) / GRID) * GRID,
+        y: Math.round(Math.max(0, Math.min(rect.height, n.y * scaleY)) / GRID) * GRID,
+      }))
+    );
+  }
+
+  // Reset nodes to random positions within the current board bounds
+  function resetNodesRandom() {
+    if (!boardRef.current) return;
+    const rect = boardRef.current.getBoundingClientRect();
+    setNodes((s) =>
+      s.map((n) => ({
+        ...n,
+        x: Math.round((Math.random() * (rect.width - GRID) + GRID / 2) / GRID) * GRID,
+        y: Math.round((Math.random() * (rect.height - GRID) + GRID / 2) / GRID) * GRID,
+      }))
+    );
+  }
+
   return (
     <div className="app-root">
       <header className="app-header">
@@ -212,6 +243,15 @@ export default function App() {
               }}
             >
               Export nodes (.json)
+            </button>
+            <button
+              onClick={migrateNodes}
+              title="Try to scale saved node coordinates to current board size"
+            >
+              Auto-migrate positions
+            </button>
+            <button onClick={resetNodesRandom} title="Randomize existing nodes across the board">
+              Reset positions
             </button>
           </div>
         </aside>

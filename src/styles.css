@@ -82,6 +82,21 @@ a {
   overflow: auto;
   border: 0;
 }
+
+/* Defensive overrides: ensure no residual centered container limits the board */
+.app-root,
+.app-root .board-area,
+.app-root .board {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.board {
+  z-index: 10;
+}
 .node {
   position: absolute;
   width: 18px;
