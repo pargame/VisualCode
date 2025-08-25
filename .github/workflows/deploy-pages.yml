@@ -293,7 +293,7 @@ jobs:
             for i in {1..24}; do
               sleep 5
               s=$(curl -sS -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github+json" "${API}/pages/builds/latest" || true)
-              status=$(echo "$s" | python3 -c "import sys,json; j=json.load(sys.stdin) if sys.stdin.read() else {}; print(j.get('status','') if isinstance(j,dict) else '')") || status=""
+              status=$(echo "$s" | python3 -c 'import sys, json; data=sys.stdin.read(); j=json.loads(data) if data.strip() else {}; print(j.get("status","") if isinstance(j, dict) else "")') || status=""
               echo "Pages build status: $status"
               if [ "$status" = "built" ]; then
                 echo "pages_built=true" >> $GITHUB_OUTPUT
