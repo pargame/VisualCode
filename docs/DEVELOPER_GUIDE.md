@@ -159,3 +159,20 @@ gh run download <run-id> --repo <owner>/<repo> --name preview-dist
 ---
 
 문서 업데이트 완료: 이 파일에 실행 가이드를 추가했습니다. 추가로 원하시면 예제 명령 블록을 늘리거나 `scripts/cleanup.sh`와 `Makefile`을 생성해 드리겠습니다.
+
+## 브랜치 정책 (간단 요약)
+
+- `main`: 소스 저장소의 단일 진입점. CI와 Actions 기반 배포를 권장합니다.
+- `gh-pages` 등 배포 전용 브랜치는 로컬에서 관리할 필요가 없으면 삭제하세요. 이 저장소에서는 불필요한 gh-pages 관련 로컬 브랜치를 정리했습니다.
+- 브랜치를 삭제하기 전에 중요한 상태는 태그로 보관하세요. 예: `cleanup-backup-branches-20250825-162407` (로컬 태그) 생성.
+- 브랜치 네이밍: `feature/<name>`, `fix/<name>`, `chore/<name>` 등 간단 규칙을 따르세요.
+
+## 최근 정리 로그
+
+- 생성된 백업 태그: `cleanup-backup-branches-20250825-162407`
+- 주요 커밋(최근 5개):
+  - d980401 chore: tidy .gitignore entries
+  - c25a36f chore: consolidate archived artifacts into cleanup backup (tag: cleanup-backup-branches-20250825-162407)
+  - 6e9a226 chore: backup and remove generated artifacts (dist, archive/artifacts)
+  - 73068ce chore: remove unneeded root docs TODO.md and UserFile.md
+  - afc802c chore: remove unneeded root docs TODO.md and UserFile.md
