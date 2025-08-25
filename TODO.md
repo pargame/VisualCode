@@ -1,3 +1,5 @@
+** 수정 금지 **
+
 # Copilot 개발 방향성
 
 - 유지 보수 추구: 관련 docs문서를 함께 최신화 하면서 진행
@@ -15,18 +17,6 @@
 
 # 목표 진행 중 문제
 
-- 실제 사이트에 배포가 적용이 안됨
+- 라이브에서 제공되는 HTML과 실제 gh-pages 브랜치의 자산이 불일치하여(또는 CDN 캐시로 인해 오래된 HTML이 서빙되어) 자산 경로가 맞지 않아 404가 발생하고 있습니다.
 - 터미널에 명령어 실행 시, 무한 로딩 및 멈춤 잦게 발생중
-
-## Recent AI actions (2025-08-25)
-
-- Fixed `src/App.jsx`: removed stray markdown fences and corrected the global click handler so clicks on the board/editor controls do not create duplicate nodes. Verified file has no syntax errors.
-- Ensured import/export UI remains available (file input + export JSON button).
-
-## Next steps (recommended)
-
-- Run the local dev server and manually verify: grid snapping, single-node creation on board clicks, node selection/edit/save, and import/export JSON flow.
-- If local verification passes: commit the fix, push to a branch, create/merge PR and let CI run (or use the repository's auto-merge policy).
-- If deployed site does not reflect changes: trigger a redeploy (force gh-pages push) and run the smoke-check again; check CDN/browser cache if still stale.
-
-_Note: these actions follow the AI full-delegation preference listed above and are safe to run when you confirm._
+- 사용자 이름을 pargamer라고 배포함->pargame으로 고쳐서 해결

@@ -13,6 +13,8 @@
 - `SECURITY.md` — 보안/취약점 처리 정책
 - `SOURCES.md` — 파일 맵과 핵심 위치
 
+Archived notes and time-stamped notifications have been moved to `docs/archive/` to keep the top-level docs focused on active guidance.
+
 ## 퀵스타트 (개발자 관점)
 
 1. 레포 클론 및 의존 설치
@@ -39,8 +41,8 @@
 
 ## 토큰 및 배포 핵심 가이드 (요약)
 
-- 자동 배포/이슈 생성은 기본적으로 `GITHUB_TOKEN`으로 동작합니다.
-- 레포지토리 범위를 넘어서는 권한(또는 cross-repo 이슈 생성 등)이 필요하면 `DEPLOY_ISSUE_TOKEN` 같은 PAT을 `Settings → Secrets`에 추가하세요.
+- 자동 배포/이슈 생성은 기본적으로 `GITHUB_TOKEN`으로 동작합니다. 대부분의 배포/자동화 작업은 추가 설정 없이 동작합니다.
+- 레포지토리 범위를 넘어서는 권한(또는 cross-repo 이슈 생성 등)이 정말로 필요할 때만 `DEPLOY_ISSUE_TOKEN` 같은 PAT을 `Settings → Secrets`에 추가하세요.
 - 워크플로우는 `secrets.*`를 직접 `if:` 에 넣지 않고, 런타임 셸 스텝에서 선택해 `outputs`로 전달하는 안전한 패턴을 사용합니다. (`docs/DEPLOYMENT.md`에 코드 예시 포함)
 
 ## 기여/수정 방법
