@@ -177,14 +177,10 @@ export default function App() {
 
   // snap helper for horizontal + top-left-to-bottom-right diagonal lattice
   function snapToDiagGrid(px, py) {
-    // basis e1 = (GRID, 0), e2 = (GRID, GRID)
-    const a = (px - py) / GRID; // coefficient along e1 relative
-    const b = py / GRID; // coefficient along e2
-    const aR = Math.round(a);
-    const bR = Math.round(b);
-    const sx = GRID * (aR + bR);
-    const sy = GRID * bR;
-    return { sx, sy };
+    // Snap to rectangular grid intersections (only multiples of GRID)
+    const gx = Math.round(px / GRID);
+    const gy = Math.round(py / GRID);
+    return { sx: GRID * gx, sy: GRID * gy };
   }
 
   return (
@@ -246,19 +242,14 @@ export default function App() {
                     rows={12}
                     placeholder="# Write Python code here"
                   />
-                  <div className="editor-actions">
-                    <button onClick={handleSaveCode}>Save code</button>
-                    <button onClick={() => handleDelete(node.id)} className="danger">
-                      Delete node
-                    </button>
-                  </div>
+                  {/* Save/Delete buttons removed per UX request; only Delete all nodes remains */}
                 </div>
               );
             })()
           ) : (
             <div>
               <h3>No node selected</h3>
-              <p>Click the grid to create a node, then select it to edit Python code.</p>
+              <p>Click the grid to create a node.</p>
             </div>
           )}
           <div className="storage-note">
@@ -266,65 +257,10 @@ export default function App() {
           </div>
 
           <div className="import-export">
-            <input
-              id="import-file"
-              type="file"
-              accept="application/json"
-              style={{ display: 'none' }}
-              onChange={(e) => {
-                const f = e.target.files && e.target.files[0];
-                if (!f) return;
-                const r = new FileReader();
-                r.onload = () => {
-                  try {
-                    const parsed = JSON.parse(r.result);
-                    if (Array.isArray(parsed)) {
-                      setNodes(parsed);
-                      setSelectedId(parsed.length ? parsed[0].id : null);
-                    }
-                  } catch (err) {
-                    // ignore invalid file
-                  }
-                };
-                r.readAsText(f);
-                // reset the input so same file can be re-selected later
-                e.target.value = '';
-              }}
-            />
-            <button onClick={() => document.getElementById('import-file').click()}>
-              Import nodes (.json)
-            </button>
+            {/* Only keep the global Delete all nodes button per request */}
             <button
               onClick={() => {
-                const blob = new Blob([JSON.stringify(nodes, null, 2)], {
-                  type: 'application/json',
-                });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `visualcode-nodes-${Date.now()}.json`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-              }}
-            >
-              Export nodes (.json)
-            </button>
-            <button
-              onClick={migrateNodes}
-              title="Try to scale saved node coordinates to current board size"
-            >
-              Auto-migrate positions
-            </button>
-            <button onClick={resetNodesRandom} title="Randomize existing nodes across the board">
-              Reset positions
-            </button>
-            <button
-              onClick={() => {
-                // protect against accidental deletion
                 if (!nodes || nodes.length === 0) return;
-                // use global confirm; tests will stub window.confirm if needed
                 if (
                   !globalThis.confirm('모든 노드를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')
                 )
