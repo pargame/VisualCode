@@ -36,7 +36,45 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   }
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+// Ensure the #root element exists. In some failure modes (service worker, fetched
+// index-latest, or other document replacements) the root node can be removed which
+// causes the app to disappear; in dev we recreate it and re-render so the UI recovers.
+function ensureRoot() {
+  let root = document.getElementById('root');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = 'root';
+    document.body.appendChild(root);
+  }
+  return root;
+}
+
+const rootEl = ensureRoot();
+const root = createRoot(rootEl);
+root.render(<App />);
+
+// Development-only: watch for the root element being removed/replaced and
+// re-insert + re-render once. This helps recover when the document is briefly
+// replaced by an index-latest fetch or a page fragment.
+if (import.meta.env && import.meta.env.DEV) {
+  let recovered = false;
+  const mo = new MutationObserver(() => {
+    if (recovered) return;
+    const current = document.getElementById('root');
+    if (!current) {
+      // recreate and re-render
+      const newRoot = ensureRoot();
+      try {
+        root.render(<App />);
+      } catch (e) {
+        // ignore render errors
+      }
+      recovered = true;
+      mo.disconnect();
+    }
+  });
+  mo.observe(document.documentElement || document, { childList: true, subtree: true });
+}
 
 // Periodically probe for a network-delivered 'index-latest.html' and replace page if it's newer.
 // This is a last-resort client-side cache-buster when Pages/CDN/SW serve stale HTML.
